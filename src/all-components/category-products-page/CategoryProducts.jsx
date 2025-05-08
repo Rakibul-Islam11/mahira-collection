@@ -44,7 +44,7 @@ const CategoryProducts = () => {
     }
 
     return (
-        <div className='w-[100%] xl:w-[90%] mx-auto px-1 sm:px-0'>
+        <div className='w-[100%] xl:w-[90%] mx-auto px-3 sm:px-0'>
             <h2 className="text-lg font-semibold mb-4">
                 Showing products for {gender} / {category}
             </h2>
