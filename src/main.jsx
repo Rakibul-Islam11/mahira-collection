@@ -6,6 +6,11 @@ import App from './App.jsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Home from './all-components/home-page/Home.jsx'
 
+import { AuthProvider } from './all-components/auth-contextapi/AuthProvider.jsx'
+import Admin from './all-components/admin-page/Admin.jsx'
+import CategoryProducts from './all-components/category-products-page/CategoryProducts.jsx'
+import AllCategoriesPage from './all-components/all-category-page/AllCategoriesPage.jsx'
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -16,9 +21,26 @@ const router = createBrowserRouter([
         element: <Home />
       },
       {
-        path: 'home',
+        path: '/home',
         element: <Home />
       },
+      // ডাইনামিক ক্যাটাগরি রাউট
+      {
+        path: '/category/:gender/:category',
+        element: <CategoryProducts />
+      },
+      {
+        path: '/category/:gender',
+        element: <CategoryProducts />
+      },
+      {
+        path: '/all-categories',
+        element: <AllCategoriesPage></AllCategoriesPage>
+      },
+      {
+        path: '/admin',
+        element: <Admin></Admin>
+      }
     ]
     
   }
@@ -26,6 +48,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router}></RouterProvider>
+    <AuthProvider>
+      <RouterProvider router={router}></RouterProvider>
+    </AuthProvider>
   </StrictMode>,
 )
