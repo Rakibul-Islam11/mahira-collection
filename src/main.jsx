@@ -10,6 +10,8 @@ import { AuthProvider } from './all-components/auth-contextapi/AuthProvider.jsx'
 import Admin from './all-components/admin-page/Admin.jsx'
 import CategoryProducts from './all-components/category-products-page/CategoryProducts.jsx'
 import AllCategoriesPage from './all-components/all-category-page/AllCategoriesPage.jsx'
+import ProductDetails from './all-components/product-details-page/ProductDetails.jsx'
+import Up from './all-components/up/Up.jsx'
 
 const router = createBrowserRouter([
   {
@@ -38,8 +40,16 @@ const router = createBrowserRouter([
         element: <AllCategoriesPage></AllCategoriesPage>
       },
       {
+        path: '/product/:productId',
+        element: <ProductDetails></ProductDetails>
+      },
+      {
         path: '/admin',
         element: <Admin></Admin>
+      },
+      {
+        path: '/up',
+        element: <Up></Up>
       }
     ]
     

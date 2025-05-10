@@ -1,0 +1,6 @@
+@media only screen and (min-width: 463px) and (max-width: 640px) {
+    .for_set-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
