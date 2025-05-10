@@ -45,14 +45,23 @@ const ProductDetails = () => {
     }, [productId]);
 
     if (loading) {
-        return <div className="text-center py-8">Loading...</div>;
+        return (
+            <div className="flex justify-center items-center h-64">
+                <div className="text-center">
+                    <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p className="text-lg font-medium">Loading product details...</p>
+                </div>
+            </div>
+        );
     }
 
     if (!product) {
-        return <div className="text-center py-8">Product not found</div>;
+        return <div className="text-center py-8 text-lg">Product not found</div>;
     }
 
-    // Function to check if current product/variant is out of stock
     const isOutOfStock = () => {
         if (product.isColorVariants) {
             return activeColor?.stock < 1;
@@ -61,26 +70,28 @@ const ProductDetails = () => {
         }
     };
 
-    // Function to check if a specific size is out of stock
     const isSizeOutOfStock = (sizeStock) => {
         return sizeStock < 1;
     };
 
     return (
-        <div className="w-[100%] xl:w-[90%] mx-auto p-4">
-            <div className="grid md:grid-cols-2 gap-8">
-                {/* Product Images with Swiper */}
-                <div>
+        <div className="w-full mx-auto p-2 sm:p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+                {/* Product Images */}
+                <div className="md:sticky md:top-4">
                     {product.isColorVariants ? (
                         /* Color Variants Mode */
                         <>
                             {/* Main Image Swiper */}
                             <Swiper
                                 spaceBetween={10}
-                                navigation={true}
+                                navigation={{
+                                    nextEl: '.main-next',
+                                    prevEl: '.main-prev',
+                                }}
                                 thumbs={{ swiper: thumbsSwiper }}
                                 modules={[Navigation, Thumbs]}
-                                className="mb-4 rounded-lg"
+                                className="mb-2 rounded-lg relative"
                             >
                                 {activeColor?.images?.map((image, index) => (
                                     <SwiperSlide key={index}>
@@ -88,29 +99,39 @@ const ProductDetails = () => {
                                             <img
                                                 src={image}
                                                 alt={`${product.name} - ${activeColor.colorName}`}
-                                                className="w-full h-[400px] object-cover"
+                                                className="w-full h-64 sm:h-80 md:h-[400px] object-cover"
                                             />
                                             {activeColor.stock < 1 && (
                                                 <div className="absolute inset-0 flex items-center justify-center">
-                                                    <span className="text-white text-2xl font-bold bg-red-500 px-4 py-2 rounded-lg shadow-lg">
+                                                    <span className="text-white text-lg sm:text-2xl font-bold bg-red-500 px-3 py-1 sm:px-4 sm:py-2 rounded-lg shadow-lg">
                                                         Out of Stock
                                                     </span>
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded">
+                                        <div className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4 bg-black bg-opacity-70 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded text-xs sm:text-sm">
                                             <p>{activeColor.colorName}</p>
                                             <p>Stock: {activeColor.stock}</p>
                                         </div>
                                     </SwiperSlide>
                                 ))}
+                                <button className="main-prev absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white p-1 rounded-full shadow-md hover:bg-gray-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                </button>
+                                <button className="main-next absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white p-1 rounded-full shadow-md hover:bg-gray-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                </button>
                             </Swiper>
 
-                            {/* Thumbnail Swiper with Navigation */}
-                            <div className="relative">
+                            {/* Thumbnail Swiper */}
+                            <div className="relative mt-2">
                                 <Swiper
                                     onSwiper={setThumbsSwiper}
-                                    spaceBetween={10}
+                                    spaceBetween={8}
                                     slidesPerView={4}
                                     freeMode={true}
                                     watchSlidesProgress={true}
@@ -130,12 +151,12 @@ const ProductDetails = () => {
                                                 <img
                                                     src={variant.thumbnail}
                                                     alt={variant.colorName}
-                                                    className="w-full h-20 object-cover"
+                                                    className="w-full h-16 sm:h-20 object-cover"
                                                 />
                                                 {variant.stock < 1 && (
                                                     <div className="absolute inset-0 flex items-center justify-center">
                                                         <span className="text-white text-xs font-bold bg-red-500 px-1 py-0.5 rounded">
-                                                            Out of Stock
+                                                            Out
                                                         </span>
                                                     </div>
                                                 )}
@@ -144,16 +165,15 @@ const ProductDetails = () => {
                                     ))}
                                 </Swiper>
 
-                                {/* Navigation arrows - only show if more than 4 thumbnails */}
                                 {product.colorVariants.length > 4 && (
                                     <>
                                         <button className="thumbnail-prev absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white p-1 rounded-full shadow-md hover:bg-gray-100">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
                                             </svg>
                                         </button>
                                         <button className="thumbnail-next absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white p-1 rounded-full shadow-md hover:bg-gray-100">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                                             </svg>
                                         </button>
@@ -167,9 +187,12 @@ const ProductDetails = () => {
                             {/* Main Image Swiper */}
                             <Swiper
                                 spaceBetween={10}
-                                navigation={true}
+                                navigation={{
+                                    nextEl: '.main-next',
+                                    prevEl: '.main-prev',
+                                }}
                                 modules={[Navigation]}
-                                className="mb-4 rounded-lg"
+                                className="mb-2 rounded-lg relative"
                                 onSlideChange={(swiper) => setActiveImageIndex(swiper.activeIndex)}
                                 onSwiper={setMainSwiper}
                             >
@@ -179,11 +202,11 @@ const ProductDetails = () => {
                                             <img
                                                 src={image}
                                                 alt={product.name}
-                                                className="w-full h-[400px] object-cover"
+                                                className="w-full h-64 sm:h-80 md:h-[400px] object-cover"
                                             />
                                             {product.stock < 1 && (
                                                 <div className="absolute inset-0 flex items-center justify-center">
-                                                    <span className="text-white text-2xl font-bold bg-red-500 px-4 py-2 rounded-lg shadow-lg">
+                                                    <span className="text-white text-lg sm:text-2xl font-bold bg-red-500 px-3 py-1 sm:px-4 sm:py-2 rounded-lg shadow-lg">
                                                         Out of Stock
                                                     </span>
                                                 </div>
@@ -191,13 +214,23 @@ const ProductDetails = () => {
                                         </div>
                                     </SwiperSlide>
                                 ))}
+                                <button className="main-prev absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white p-1 rounded-full shadow-md hover:bg-gray-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                </button>
+                                <button className="main-next absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white p-1 rounded-full shadow-md hover:bg-gray-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                </button>
                             </Swiper>
 
                             {/* Thumbnail Swiper */}
                             {product.images?.length > 1 && (
-                                <div className="relative">
+                                <div className="relative mt-2">
                                     <Swiper
-                                        spaceBetween={10}
+                                        spaceBetween={8}
                                         slidesPerView={4}
                                         freeMode={true}
                                         watchSlidesProgress={true}
@@ -218,12 +251,12 @@ const ProductDetails = () => {
                                                     <img
                                                         src={image}
                                                         alt={product.name}
-                                                        className="w-full h-20 object-cover"
+                                                        className="w-full h-16 sm:h-20 object-cover"
                                                     />
                                                     {product.stock < 1 && (
                                                         <div className="absolute inset-0 flex items-center justify-center">
                                                             <span className="text-white text-xs font-bold bg-red-500 px-1 py-0.5 rounded">
-                                                                Out of Stock
+                                                                Out
                                                             </span>
                                                         </div>
                                                     )}
@@ -238,51 +271,52 @@ const ProductDetails = () => {
                 </div>
 
                 {/* Product Details */}
-                <div>
-                    <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
-                    <div className="mb-4">
-                        <span className="text-xl font-semibold">৳{product.price}</span>
+                <div className="px-2 sm:px-0">
+                    <h1 className="text-xl sm:text-2xl font-bold mb-2">{product.name}</h1>
+
+                    <div className="mb-3">
+                        <span className="text-lg sm:text-xl font-semibold">৳{product.price}</span>
                         {product.regularPrice && (
-                            <span className="text-gray-500 line-through ml-2">৳{product.regularPrice}</span>
+                            <span className="text-gray-500 line-through ml-2 text-sm sm:text-base">৳{product.regularPrice}</span>
                         )}
                     </div>
 
-                    {/* Color Variant Selection - only show if color variants exist */}
+                    {/* Color Variant Selection */}
                     {product.isColorVariants && product.colorVariants?.length > 0 && (
-                        <div className="mb-4">
-                            <h3 className="font-medium mb-2">Color: {activeColor?.colorName}</h3>
-                            <div className="flex flex-wrap gap-2">
+                        <div className="mb-3">
+                            <h3 className="font-medium mb-1 sm:mb-2">Color: {activeColor?.colorName}</h3>
+                            <div className="flex flex-wrap gap-1 sm:gap-2">
                                 {product.colorVariants.map((variant, index) => (
                                     <button
                                         key={index}
-                                        className={`px-3 py-1 rounded-full border ${activeColor?.colorName === variant.colorName ? 'bg-blue-100 border-blue-500' : 'border-gray-300'} ${variant.stock < 1 ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                        className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-full border text-xs sm:text-sm ${activeColor?.colorName === variant.colorName ? 'bg-blue-100 border-blue-500' : 'border-gray-300'} ${variant.stock < 1 ? 'opacity-70 cursor-not-allowed' : ''}`}
                                         onClick={() => variant.stock >= 1 && setActiveColor(variant)}
                                         disabled={variant.stock < 1}
                                     >
                                         {variant.colorName}
-                                        {variant.stock < 1 && ' (Out of Stock)'}
+                                        {variant.stock < 1 && ' (Out)'}
                                     </button>
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    {/* Size Selection - only show if sizes exist */}
+                    {/* Size Selection */}
                     {activeColor?.sizes?.length > 0 && (
-                        <div className="mb-4">
-                            <h3 className="font-medium mb-2">Size</h3>
-                            <div className="flex flex-wrap gap-2">
+                        <div className="mb-3">
+                            <h3 className="font-medium mb-1 sm:mb-2">Size</h3>
+                            <div className="flex flex-wrap gap-1 sm:gap-2">
                                 {activeColor.sizes.map((size, index) => (
                                     <div key={index} className="flex flex-col items-center">
                                         <button
-                                            className={`px-3 py-1 rounded border ${selectedSize?.size === size.size ? 'bg-blue-100 border-blue-500' : 'border-gray-300'} ${isSizeOutOfStock(size.stock) ? 'opacity-70 cursor-not-allowed' : 'hover:border-blue-400'}`}
+                                            className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded border text-xs sm:text-sm ${selectedSize?.size === size.size ? 'bg-blue-100 border-blue-500' : 'border-gray-300'} ${isSizeOutOfStock(size.stock) ? 'opacity-70 cursor-not-allowed' : 'hover:border-blue-400'}`}
                                             onClick={() => !isSizeOutOfStock(size.stock) && setSelectedSize(size)}
                                             disabled={isSizeOutOfStock(size.stock)}
                                         >
                                             {size.size}
                                         </button>
-                                        <span className={`text-xs mt-1 ${isSizeOutOfStock(size.stock) ? 'text-red-500' : 'text-gray-500'}`}>
-                                            {size.stock} in stock
+                                        <span className={`text-xs mt-0.5 ${isSizeOutOfStock(size.stock) ? 'text-red-500' : 'text-gray-500'}`}>
+                                            {size.stock} left
                                         </span>
                                     </div>
                                 ))}
@@ -290,40 +324,40 @@ const ProductDetails = () => {
                         </div>
                     )}
 
-                    <div className="mb-4">
+                    <div className="mb-3">
                         <span className={`font-medium ${isOutOfStock() ? 'text-red-500' : 'text-green-600'}`}>
                             {isOutOfStock() ? 'Out of Stock' : 'In Stock'}
                         </span>
                         {!isOutOfStock() && (
-                            <span className="text-gray-500 ml-2">
+                            <span className="text-gray-500 ml-2 text-sm sm:text-base">
                                 {product.isColorVariants ?
                                     (activeColor?.sizes?.length > 0 ?
-                                        `${activeColor.sizes.reduce((total, size) => total + size.stock, 0)} units available`
-                                        : `${activeColor?.stock} units available`)
-                                    : `${product.stock} units available`
+                                        `${activeColor.sizes.reduce((total, size) => total + size.stock, 0)} available`
+                                        : `${activeColor?.stock} available`)
+                                    : `${product.stock} available`
                                 }
                             </span>
                         )}
                     </div>
 
-                    <div className="flex gap-4">
+                    <div className="flex gap-2 sm:gap-4 mb-4">
                         <button
-                            className={`px-6 py-2 rounded ${isOutOfStock() || (activeColor?.sizes?.length > 0 && !selectedSize) ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                            className={`flex-1 px-4 py-2 sm:px-6 sm:py-2 rounded text-sm sm:text-base ${isOutOfStock() || (activeColor?.sizes?.length > 0 && !selectedSize) ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
                             disabled={isOutOfStock() || (activeColor?.sizes?.length > 0 && !selectedSize)}
                         >
                             Add to Cart
                         </button>
                         <button
-                            className={`px-6 py-2 rounded ${isOutOfStock() || (activeColor?.sizes?.length > 0 && !selectedSize) ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                            className={`flex-1 px-4 py-2 sm:px-6 sm:py-2 rounded text-sm sm:text-base ${isOutOfStock() || (activeColor?.sizes?.length > 0 && !selectedSize) ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
                             disabled={isOutOfStock() || (activeColor?.sizes?.length > 0 && !selectedSize)}
                         >
                             Buy Now
                         </button>
                     </div>
 
-                    <div className="mb-6 mt-4">
-                        <h2 className="font-semibold mb-2">Description</h2>
-                        <p>{product.description || 'No description available.'}</p>
+                    <div className="mb-4">
+                        <h2 className="font-semibold mb-1 sm:mb-2">Description</h2>
+                        <p className="text-sm sm:text-base">{product.description || 'No description available.'}</p>
                     </div>
                 </div>
             </div>
