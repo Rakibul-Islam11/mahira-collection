@@ -12,6 +12,8 @@ import CategoryProducts from './all-components/category-products-page/CategoryPr
 import AllCategoriesPage from './all-components/all-category-page/AllCategoriesPage.jsx'
 import ProductDetails from './all-components/product-details-page/ProductDetails.jsx'
 import Up from './all-components/up/Up.jsx'
+import NonDirectCategory from './all-components/non-direct-category/NonDirectCategory.jsx'
+import MenuCategoryForm from './all-components/up/MenuCategoryForm.jsx'
 
 const router = createBrowserRouter([
   {
@@ -26,7 +28,11 @@ const router = createBrowserRouter([
         path: '/home',
         element: <Home />
       },
-      // ডাইনামিক ক্যাটাগরি রাউট
+      {
+        path: '/category/:gender',
+        element: <NonDirectCategory />
+      },
+
       {
         path: '/category/:gender/:category',
         element: <CategoryProducts />
@@ -43,13 +49,18 @@ const router = createBrowserRouter([
         path: '/product/:productId',
         element: <ProductDetails></ProductDetails>
       },
+
       {
         path: '/admin',
         element: <Admin></Admin>
       },
       {
-        path: '/up',
+        path: '/up-products',
         element: <Up></Up>
+      },
+      {
+        path: '/up-categories',
+        element: <MenuCategoryForm></MenuCategoryForm>
       }
     ]
     
@@ -63,3 +74,16 @@ createRoot(document.getElementById('root')).render(
     </AuthProvider>
   </StrictMode>,
 )
+
+
+// যদি সেইম রাউট স্মসসা হয় প্রস্তাবিত সমাধান:
+
+// আমি সমাধান 1(রাউট অর্ডার পরিবর্তন) ব্যবহার করার পরামর্শ দিচ্ছি, কারণ:
+
+//     এটি সবচেয়ে সহজ সমাধান
+
+//     কোনো অতিরিক্ত কম্পোনেন্ট বা লজিকের প্রয়োজন নেই
+
+//     রাউটিং লজিক ক্লিয়ার থাকে
+
+// মনে রাখবেন, React Router রাউটগুলোকে উপর থেকে নিচে ম্যাচ করে, তাই স্পেসিফিক রাউটগুলোকে(যেগুলোতে বেশি প্যারামিটার আছে) নিচে রাখুন এবং জেনেরিক রাউটগুলোকে উপরে রাখুন।

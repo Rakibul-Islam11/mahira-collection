@@ -2,81 +2,79 @@ import { Link, useParams } from 'react-router-dom';
 import { db } from '../../../firbase.config';
 import { useEffect, useState } from 'react';
 import { collection, query, where, getDocs, limit, startAfter } from 'firebase/firestore';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import './category-product.css';
 
 const CategoryProducts = () => {
     const { gender, category } = useParams();
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [lastVisible, setLastVisible] = useState(null);
-    const [hasMore, setHasMore] = useState(true);
-    const [page, setPage] = useState(1);
     const productsPerPage = 2;
 
-    useEffect(() => {
-        const fetchInitialProducts = async () => {
-            try {
-                const q = query(
-                    collection(db, 'products'),
-                    where('gender', '==', gender),
-                    where('subcategory', 'array-contains', category.toLowerCase()),
-                    limit(productsPerPage)
-                );
-
-                const querySnapshot = await getDocs(q);
-                const fetchedProducts = [];
-
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.available && data.stock > 0) {
-                        fetchedProducts.push({ id: doc.id, ...data });
-                    }
-                });
-
-                setProducts(fetchedProducts);
-                setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
-                setHasMore(fetchedProducts.length === productsPerPage);
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching products:', error);
-                setLoading(false);
-            }
-        };
-
-        fetchInitialProducts();
-    }, [gender, category]);
-
-    const loadMoreProducts = async () => {
-        setLoading(true);
-        try {
-            const q = query(
+    const fetchProducts = async ({ pageParam = null }) => {
+        const q = pageParam
+            ? query(
                 collection(db, 'products'),
                 where('gender', '==', gender),
                 where('subcategory', 'array-contains', category.toLowerCase()),
-                startAfter(lastVisible),
+                startAfter(pageParam),
+                limit(productsPerPage)
+            )
+            : query(
+                collection(db, 'products'),
+                where('gender', '==', gender),
+                where('subcategory', 'array-contains', category.toLowerCase()),
                 limit(productsPerPage)
             );
 
-            const querySnapshot = await getDocs(q);
-            const newProducts = [];
+        const querySnapshot = await getDocs(q);
+        const fetchedProducts = [];
 
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                if (data.available && data.stock > 0) {
-                    newProducts.push({ id: doc.id, ...data });
-                }
-            });
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            if (data.available && data.stock > 0) {
+                fetchedProducts.push({ id: doc.id, ...data });
+            }
+        });
 
-            setProducts([...products, ...newProducts]);
-            setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
-            setHasMore(newProducts.length === productsPerPage);
-            setPage(page + 1);
-        } catch (error) {
-            console.error('Error fetching more products:', error);
-        }
-        setLoading(false);
+        return {
+            products: fetchedProducts,
+            lastVisible: querySnapshot.docs[querySnapshot.docs.length - 1]
+        };
     };
 
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading,
+        error
+    } = useInfiniteQuery({
+        queryKey: ['products', gender, category],
+        queryFn: fetchProducts,
+        getNextPageParam: (lastPage) => lastPage.lastVisible,
+        staleTime: 5 * 60 * 1000, // 5 minutes cache
+        keepPreviousData: true
+    });
+
+    const products = data?.pages.flatMap(page => page.products) || [];
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <div className="text-center">
+                    <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p className="text-lg font-medium">Loading products...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return <div className="text-center py-8">Error loading products</div>;
+    }
 
     return (
         <div className='w-[100%] xl:w-[90%] mx-auto px-3 sm:px-0'>
@@ -155,14 +153,14 @@ const CategoryProducts = () => {
                         })}
                     </ul>
 
-                    {hasMore && (
+                    {hasNextPage && (
                         <div className="mt-6 text-center">
                             <button
-                                onClick={loadMoreProducts}
-                                disabled={loading}
+                                onClick={() => fetchNextPage()}
+                                disabled={isFetchingNextPage}
                                 className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded inline-flex items-center"
                             >
-                                {loading ? (
+                                {isFetchingNextPage ? (
                                     <>
                                         <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

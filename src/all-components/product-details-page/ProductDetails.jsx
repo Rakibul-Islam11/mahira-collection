@@ -75,7 +75,7 @@ const ProductDetails = () => {
     };
 
     return (
-        <div className="w-full mx-auto p-2 sm:p-4">
+        <div className="w-[100%] xl:w-[90%] mx-auto p-2 sm:p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                 {/* Product Images */}
                 <div className="md:sticky md:top-4">
@@ -272,24 +272,38 @@ const ProductDetails = () => {
 
                 {/* Product Details */}
                 <div className="px-2 sm:px-0">
-                    <h1 className="text-xl sm:text-2xl font-bold mb-2">{product.name}</h1>
+                    {/* Product Name */}
+                    <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">{product.name}</h1>
 
-                    <div className="mb-3">
-                        <span className="text-lg sm:text-xl font-semibold">৳{product.price}</span>
+                    {/* Price Section */}
+                    <div className="flex items-center mb-4 sm:mb-5">
+                        <span className="text-lg sm:text-xl font-semibold text-gray-900">৳{product.price}</span>
                         {product.regularPrice && (
                             <span className="text-gray-500 line-through ml-2 text-sm sm:text-base">৳{product.regularPrice}</span>
+                        )}
+                        {product.discount > 0 && (
+                            <span className="ml-2 bg-red-100 text-red-600 text-xs sm:text-sm px-2 py-0.5 rounded">
+                                {product.discount}% OFF
+                            </span>
                         )}
                     </div>
 
                     {/* Color Variant Selection */}
                     {product.isColorVariants && product.colorVariants?.length > 0 && (
-                        <div className="mb-3">
-                            <h3 className="font-medium mb-1 sm:mb-2">Color: {activeColor?.colorName}</h3>
-                            <div className="flex flex-wrap gap-1 sm:gap-2">
+                        <div className="mb-4 sm:mb-5">
+                            <div className="flex items-center mb-2">
+                                <h3 className="font-medium text-gray-700">Color:</h3>
+                                <span className="ml-2 font-medium text-gray-900">{activeColor?.colorName}</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
                                 {product.colorVariants.map((variant, index) => (
                                     <button
                                         key={index}
-                                        className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-full border text-xs sm:text-sm ${activeColor?.colorName === variant.colorName ? 'bg-blue-100 border-blue-500' : 'border-gray-300'} ${variant.stock < 1 ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                        className={`px-3 py-1 rounded-full border text-xs sm:text-sm transition-colors
+                            ${activeColor?.colorName === variant.colorName
+                                                ? 'bg-blue-100 border-blue-500 text-blue-800'
+                                                : 'border-gray-300 text-gray-700 hover:border-gray-400'}
+                            ${variant.stock < 1 ? 'opacity-60 cursor-not-allowed' : ''}`}
                                         onClick={() => variant.stock >= 1 && setActiveColor(variant)}
                                         disabled={variant.stock < 1}
                                     >
@@ -303,19 +317,23 @@ const ProductDetails = () => {
 
                     {/* Size Selection */}
                     {activeColor?.sizes?.length > 0 && (
-                        <div className="mb-3">
-                            <h3 className="font-medium mb-1 sm:mb-2">Size</h3>
-                            <div className="flex flex-wrap gap-1 sm:gap-2">
+                        <div className="mb-4 sm:mb-5">
+                            <h3 className="font-medium text-gray-700 mb-2">Select Size</h3>
+                            <div className="flex flex-wrap gap-2">
                                 {activeColor.sizes.map((size, index) => (
                                     <div key={index} className="flex flex-col items-center">
                                         <button
-                                            className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded border text-xs sm:text-sm ${selectedSize?.size === size.size ? 'bg-blue-100 border-blue-500' : 'border-gray-300'} ${isSizeOutOfStock(size.stock) ? 'opacity-70 cursor-not-allowed' : 'hover:border-blue-400'}`}
+                                            className={`w-12 sm:w-14 px-2 py-1 rounded border text-xs sm:text-sm font-medium transition-colors
+                                ${selectedSize?.size === size.size
+                                                    ? 'bg-blue-100 border-blue-500 text-blue-800'
+                                                    : 'border-gray-300 text-gray-700 hover:border-gray-400'}
+                                ${isSizeOutOfStock(size.stock) ? 'opacity-60 cursor-not-allowed' : ''}`}
                                             onClick={() => !isSizeOutOfStock(size.stock) && setSelectedSize(size)}
                                             disabled={isSizeOutOfStock(size.stock)}
                                         >
                                             {size.size}
                                         </button>
-                                        <span className={`text-xs mt-0.5 ${isSizeOutOfStock(size.stock) ? 'text-red-500' : 'text-gray-500'}`}>
+                                        <span className={`text-xs mt-1 ${isSizeOutOfStock(size.stock) ? 'text-red-500' : 'text-gray-500'}`}>
                                             {size.stock} left
                                         </span>
                                     </div>
@@ -324,7 +342,8 @@ const ProductDetails = () => {
                         </div>
                     )}
 
-                    <div className="mb-3">
+                    {/* Stock Status */}
+                    <div className="flex items-center mb-5 sm:mb-6">
                         <span className={`font-medium ${isOutOfStock() ? 'text-red-500' : 'text-green-600'}`}>
                             {isOutOfStock() ? 'Out of Stock' : 'In Stock'}
                         </span>
@@ -340,24 +359,37 @@ const ProductDetails = () => {
                         )}
                     </div>
 
-                    <div className="flex gap-2 sm:gap-4 mb-4">
+                    {/* Action Buttons */}
+                    <div className="flex gap-3 mb-6">
                         <button
-                            className={`flex-1 px-4 py-2 sm:px-6 sm:py-2 rounded text-sm sm:text-base ${isOutOfStock() || (activeColor?.sizes?.length > 0 && !selectedSize) ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                            className={`flex-1 max-w-[180px] px-4 py-2.5 rounded-md text-sm sm:text-base font-medium transition-colors
+                ${isOutOfStock() || (activeColor?.sizes?.length > 0 && !selectedSize)
+                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    : 'bg-blue-600 text-white hover:bg-blue-700'}`}
                             disabled={isOutOfStock() || (activeColor?.sizes?.length > 0 && !selectedSize)}
                         >
                             Add to Cart
                         </button>
                         <button
-                            className={`flex-1 px-4 py-2 sm:px-6 sm:py-2 rounded text-sm sm:text-base ${isOutOfStock() || (activeColor?.sizes?.length > 0 && !selectedSize) ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                            className={`flex-1 max-w-[180px] px-4 py-2.5 rounded-md text-sm sm:text-base font-medium transition-colors
+                ${isOutOfStock() || (activeColor?.sizes?.length > 0 && !selectedSize)
+                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    : 'bg-green-600 text-white hover:bg-green-700'}`}
                             disabled={isOutOfStock() || (activeColor?.sizes?.length > 0 && !selectedSize)}
                         >
                             Buy Now
                         </button>
                     </div>
 
-                    <div className="mb-4">
-                        <h2 className="font-semibold mb-1 sm:mb-2">Description</h2>
-                        <p className="text-sm sm:text-base">{product.description || 'No description available.'}</p>
+                    {/* Product Description */}
+                    <div className="mb-4 border-t pt-4">
+                        <h2 className="font-semibold text-gray-800 mb-3">Product Details</h2>
+                        <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
+                            {product.description || 'No description available.'}
+                        </p>
+                        <div>
+                            <img src={product.detailsImage} alt="" />
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1,57 +1,59 @@
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { db } from '../../../firbase.config';
-import { useQuery } from '@tanstack/react-query';
-import { collection, getDocs } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
+import { collection, query, where, getDocs, limit, startAfter } from 'firebase/firestore';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
-const AllProductsPage = () => {
-    const productsPerPage = 3;
-    const loadMoreCount = 2;
-    const [searchParams, setSearchParams] = useSearchParams();
-    const currentPage = Number(searchParams.get('page')) || 1;
-    const [loadingMore, setLoadingMore] = useState(false);
+const NonDirectCategory = () => {
+    const { gender } = useParams();
+    const productsPerPage = 2;
 
-    // Fetch all products with React Query
-    const { data: allProducts = [], isLoading } = useQuery({
-        queryKey: ['allProducts'],
-        queryFn: async () => {
-            const querySnapshot = await getDocs(collection(db, 'products'));
-            const fetchedProducts = [];
+    const fetchProducts = async ({ pageParam = null }) => {
+        const q = pageParam
+            ? query(
+                collection(db, 'products'),
+                where('gender', '==', gender),
+                startAfter(pageParam),
+                limit(productsPerPage)
+            )
+            : query(
+                collection(db, 'products'),
+                where('gender', '==', gender),
+                limit(productsPerPage)
+            );
 
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                if (data.available && data.stock > 0) {
-                    fetchedProducts.push({ id: doc.id, ...data });
-                }
-            });
+        const querySnapshot = await getDocs(q);
+        const fetchedProducts = [];
 
-            // Fisher-Yates shuffle algorithm
-            const shuffledProducts = [...fetchedProducts];
-            for (let i = shuffledProducts.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffledProducts[i], shuffledProducts[j]] = [shuffledProducts[j], shuffledProducts[i]];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            if (data.available && data.stock > 0) {
+                fetchedProducts.push({ id: doc.id, ...data });
             }
+        });
 
-            return shuffledProducts;
-        },
-        staleTime: Infinity, // Never stale
-        cacheTime: 24 * 60 * 60 * 1000, // 24 hours cache
-    });
-
-    // Calculate displayed products based on current page
-    const displayedProducts = allProducts.slice(0, productsPerPage + (currentPage - 1) * loadMoreCount);
-
-    const loadMoreProducts = async () => {
-        setLoadingMore(true);
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setSearchParams({ page: currentPage + 1 });
-        setLoadingMore(false);
+        return {
+            products: fetchedProducts,
+            lastVisible: querySnapshot.docs[querySnapshot.docs.length - 1]
+        };
     };
 
-    // Scroll to top when page changes
-    useEffect(() => {
-        window.scrollTo(0, 0);
-    }, [currentPage]);
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading,
+        error
+    } = useInfiniteQuery({
+        queryKey: ['products', gender],
+        queryFn: fetchProducts,
+        getNextPageParam: (lastPage) => lastPage.lastVisible,
+        staleTime: 5 * 60 * 1000,
+        keepPreviousData: true
+    });
+
+    const products = data?.pages.flatMap(page => page.products) || [];
 
     if (isLoading) {
         return (
@@ -61,32 +63,36 @@ const AllProductsPage = () => {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <p className="text-lg font-medium">Loading all products...</p>
+                    <p className="text-lg font-medium">Loading products...</p>
                 </div>
             </div>
         );
     }
 
+    if (error) {
+        return <div className="text-center py-8">Error loading products</div>;
+    }
+
     return (
         <div className='w-[100%] xl:w-[90%] mx-auto px-3 sm:px-0'>
-            <h2 className="text-lg font-semibold mb-4 mt-2">
-                All Products/
+            <h2 className="text-lg font-semibold mb-4">
+                {gender}'s Collection
             </h2>
 
-            {displayedProducts.length === 0 ? (
-                <p className="text-center py-8">No products found.</p>
+            {products.length === 0 ? (
+                <p>No products found in this category.</p>
             ) : (
                 <>
                     <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1 for_set-grid">
-                        {displayedProducts.map((product) => {
+                        {products.map((product) => {
                             const hasDiscount = product.discount && product.discount > 0;
 
                             return (
                                 <li key={product.id} className="border border-gray-400 rounded-lg overflow-hidden hover:shadow-md transition-shadow flex flex-col mb-6">
                                     <div className="p-3 flex-grow flex flex-col">
-                                        <Link to={`/product/${product.id}`} className="relative">
+                                        <Link to={`/product/${product.productId || product.id}`} className="relative">
                                             <img
-                                                src={product.mainImage || product.images?.[0] || '/placeholder-product.jpg'}
+                                                src={product.mainImage || product.images?.[0]}
                                                 alt={product.name}
                                                 className="w-full h-48 object-cover mb-2"
                                             />
@@ -144,23 +150,23 @@ const AllProductsPage = () => {
                         })}
                     </ul>
 
-                    {allProducts.length > displayedProducts.length && (
-                        <div className="flex justify-center mt-6 mb-10">
+                    {hasNextPage && (
+                        <div className="mt-6 text-center">
                             <button
-                                onClick={loadMoreProducts}
-                                disabled={loadingMore}
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md transition-colors duration-200 flex items-center justify-center min-w-32"
+                                onClick={() => fetchNextPage()}
+                                disabled={isFetchingNextPage}
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded inline-flex items-center"
                             >
-                                {loadingMore ? (
+                                {isFetchingNextPage ? (
                                     <>
-                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
                                         Loading...
                                     </>
                                 ) : (
-                                    "Load More"
+                                    'Load More Products'
                                 )}
                             </button>
                         </div>
@@ -171,4 +177,4 @@ const AllProductsPage = () => {
     );
 };
 
-export default AllProductsPage;
+export default NonDirectCategory;
