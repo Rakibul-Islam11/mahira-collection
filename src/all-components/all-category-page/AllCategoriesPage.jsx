@@ -143,7 +143,7 @@ const AllProductsPage = () => {
                                             <img
                                                 src={product.mainImage || product.images?.[0] || '/placeholder-product.jpg'}
                                                 alt={product.name}
-                                                className="w-full h-[20] md:h-48 object-cover mb-2 rounded-lg"
+                                                className="w-full h-[30] md:h-48 object-cover mb-2 rounded-lg"
                                             />
                                             {hasDiscount && (
                                                 <div className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xs font-bold shadow-md">
