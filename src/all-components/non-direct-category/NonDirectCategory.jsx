@@ -22,6 +22,7 @@ const NonDirectCategory = () => {
                 limit(productsPerPage)
             );
 
+
         const querySnapshot = await getDocs(q);
         const fetchedProducts = [];
 
@@ -52,6 +53,42 @@ const NonDirectCategory = () => {
         staleTime: 5 * 60 * 1000,
         keepPreviousData: true
     });
+
+    const addToCart = (product) => {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const existingItem = cart.find(item => item.id === product.id);
+
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({
+                id: product.id,
+                productId: product.productId,
+                name: product.name,
+                price: product.discount
+                    ? (product.price - (product.price * (product.discount / 100))).toFixed(2)
+                    : product.price,
+                image: product.mainImage || product.images?.[0],
+                quantity: 1
+            });
+        }
+
+        localStorage.setItem('cart', JSON.stringify(cart));
+
+        // Dispatch both events to ensure cart count updates everywhere
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new CustomEvent('cartUpdated'));
+    };
+
+    const handleAddToCartOrRedirect = (product) => {
+        const hasColorVariants = product.isColorVariants && product.colorVariants?.length > 0;
+
+        if (hasColorVariants) {
+            window.location.href = `/product/${product.productId || product.id}`;
+        } else {
+            addToCart(product);
+        }
+    };
 
     const products = data?.pages.flatMap(page => page.products) || [];
 
@@ -86,6 +123,7 @@ const NonDirectCategory = () => {
                     <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1 for_set-grid">
                         {products.map((product) => {
                             const hasDiscount = product.discount && product.discount > 0;
+                            const hasColorVariants = product.isColorVariants && product.colorVariants?.length > 0;
 
                             return (
                                 <li key={product.id} className="border border-gray-400 rounded-lg overflow-hidden hover:shadow-md transition-shadow flex flex-col mb-6">
@@ -120,16 +158,28 @@ const NonDirectCategory = () => {
                                                         <del>৳{product.regularPrice}</del>
                                                     </div>
                                                 )}
+                                                <div>
+                                                    {product.productType && <p className='text-red-400'>({product.productType})</p>}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="p-3 pt-2 border-t border-gray-100 space-y-2">
                                         <div className="flex gap-2 mb-0">
-                                            <button className="flex-1 border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-2 px-3 rounded text-sm font-medium transition-colors duration-200">
-                                                Add to Cart
+                                            <button
+                                                onClick={() => handleAddToCartOrRedirect(product)}
+                                                className="flex-1 border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
+                                            >
+                                                {hasColorVariants ? 'View Options' : 'Add to Cart'}
                                             </button>
-                                            <button className="flex-1 border border-green-600 bg-white text-green-600 hover:bg-green-600 hover:text-white py-2 px-3 rounded text-sm font-medium transition-colors duration-200">
+                                            <button
+                                                onClick={() => {
+                                                    handleAddToCartOrRedirect(product);
+                                                    window.location.href = '/checkout';
+                                                }}
+                                                className="flex-1 border border-green-600 bg-white text-green-600 hover:bg-green-600 hover:text-white py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
+                                            >
                                                 Order Now
                                             </button>
                                         </div>

@@ -32,7 +32,10 @@ const Up = () => {
         images: [''],
         discount: 0,
         gender: '',
-        mainImage: ''
+        mainImage: '',
+        isPreOrder: false,
+        productType: '',
+        preOrderDescription: ''
     });
 
     // Handle input changes
@@ -225,7 +228,11 @@ const Up = () => {
                 gender: formData.gender,
                 mainImage: formData.mainImage,
                 isColorVariants: formData.isColorVariant,
-                createdAt: new Date()
+                createdAt: new Date(),
+                ...(formData.isPreOrder && {
+                    productType: 'pre-order',
+                    preOrderDescription: formData.preOrderDescription
+                })
             };
 
             // Add color variants or images based on selection
@@ -278,7 +285,10 @@ const Up = () => {
                 images: [''],
                 discount: 0,
                 gender: '',
-                mainImage: ''
+                mainImage: '',
+                isPreOrder: false,
+                productType: '',
+                preOrderDescription: ''
             }));
 
         } catch (error) {
@@ -522,6 +532,48 @@ const Up = () => {
                     />
                     <label className="ml-2 block text-sm text-gray-700">Has Color Variants</label>
                 </div>
+
+                {/* Pre-order Section */}
+                <div className="flex items-center">
+                    <input
+                        type="checkbox"
+                        name="isPreOrder"
+                        checked={formData.isPreOrder}
+                        onChange={handleChange}
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <label className="ml-2 block text-sm text-gray-700">Pre-order Product</label>
+                </div>
+
+                {formData.isPreOrder && (
+                    <div className="space-y-4 border p-4 rounded-lg">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Product Type</label>
+                            <select
+                                name="productType"
+                                value={formData.productType}
+                                onChange={handleChange}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                required
+                            >
+                                <option value="">Select Product Type</option>
+                                <option value="pre-order">Pre-order</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Pre-order Description</label>
+                            <textarea
+                                name="preOrderDescription"
+                                value={formData.preOrderDescription}
+                                onChange={handleChange}
+                                rows={3}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                required
+                            />
+                        </div>
+                    </div>
+                )}
 
                 {/* Color Variants Section */}
                 {formData.isColorVariant && (

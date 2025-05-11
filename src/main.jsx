@@ -14,6 +14,7 @@ import ProductDetails from './all-components/product-details-page/ProductDetails
 import Up from './all-components/up/Up.jsx'
 import NonDirectCategory from './all-components/non-direct-category/NonDirectCategory.jsx'
 import MenuCategoryForm from './all-components/up/MenuCategoryForm.jsx'
+import Cart from './all-components/Cart-page/Cart.jsx'
 
 const router = createBrowserRouter([
   {
@@ -61,6 +62,10 @@ const router = createBrowserRouter([
       {
         path: '/up-categories',
         element: <MenuCategoryForm></MenuCategoryForm>
+      },
+      {
+        path: '/cart',
+        element: <Cart></Cart>
       }
     ]
     

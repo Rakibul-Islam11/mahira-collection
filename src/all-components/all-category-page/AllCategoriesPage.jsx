@@ -114,6 +114,9 @@ const AllProductsPage = () => {
                                                         <del>৳{product.regularPrice}</del>
                                                     </div>
                                                 )}
+                                                <div>
+                                                    {product.productType && <p className='text-red-400'>({product.productType})</p>}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
