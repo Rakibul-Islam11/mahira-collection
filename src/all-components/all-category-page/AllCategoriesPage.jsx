@@ -68,7 +68,7 @@ const AllProductsPage = () => {
     }
 
     return (
-        <div className='w-[100%] xl:w-[90%] mx-auto px-3 sm:px-0'>
+        <div className='w-[100%] xl:w-[90%] mx-auto px-[1px] sm:px-0'>
             <h2 className="text-lg font-semibold mb-4 mt-2">
                 All Products/
             </h2>
@@ -77,7 +77,7 @@ const AllProductsPage = () => {
                 <p className="text-center py-8">No products found.</p>
             ) : (
                 <>
-                    <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1 for_set-grid">
+                    <ul className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1 for_set-grid">
                         {displayedProducts.map((product) => {
                             const hasDiscount = product.discount && product.discount > 0;
 
@@ -122,7 +122,7 @@ const AllProductsPage = () => {
                                     </div>
 
                                     <div className="p-3 pt-2 border-t border-gray-100 space-y-2">
-                                        <div className="flex gap-2 mb-0">
+                                        <div className="flex flex-col md:flex-row gap-2 mb-0">
                                             <button className="flex-1 border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-2 px-3 rounded text-sm font-medium transition-colors duration-200">
                                                 Add to Cart
                                             </button>
