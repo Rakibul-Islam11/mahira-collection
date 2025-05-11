@@ -12,7 +12,12 @@ const Cart = () => {
 
     useEffect(() => {
         const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        setCartItems(cart);
+        // Ensure all prices are numbers
+        const validatedCart = cart.map(item => ({
+            ...item,
+            price: typeof item.price === 'string' ? parseFloat(item.price) : item.price
+        }));
+        setCartItems(validatedCart);
         fetchShippingCharges();
         setIsLoading(false);
     }, []);
@@ -52,7 +57,10 @@ const Cart = () => {
     };
 
     const calculateSubtotal = () => {
-        return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+        return cartItems.reduce((total, item) => {
+            const price = typeof item.price === 'number' ? item.price : 0;
+            return total + (price * item.quantity);
+        }, 0);
     };
 
     const calculateTotal = () => {
@@ -147,99 +155,100 @@ const Cart = () => {
                         <div className="lg:col-span-7">
                             <div className="bg-white shadow-sm rounded-lg overflow-hidden">
                                 <ul className="divide-y divide-gray-200">
-                                    {cartItems.map((item) => (
-                                        <li key={item.id} className="p-3 sm:p-4">
-                                            <div className="flex items-start sm:items-center">
-                                                {/* Compact image */}
-                                                <div className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-md overflow-hidden">
-                                                    <img
-                                                        src={item.image}
-                                                        alt={item.name}
-                                                        className="w-full h-full object-cover object-center"
-                                                    />
-                                                </div>
+                                    {cartItems.map((item) => {
+                                        const price = typeof item.price === 'number' ? item.price : 0;
+                                        const itemTotal = (price * item.quantity).toFixed(2);
 
-                                                <div className="ml-4 flex-1 min-w-0">
-                                                    <div className="flex justify-between">
-                                                        <div>
-                                                            <h3 className="text-sm sm:text-base font-medium text-gray-900 truncate">
-                                                                {item.name}
-                                                            </h3>
-                                                            <p className="mt-1 text-sm font-semibold text-gray-900">
-                                                                ৳{item.price.toFixed(2)}
+                                        return (
+                                            <li key={item.id} className="py-3 px-4 border-b border-gray-200 last:border-b-0">
+                                                <div className="flex gap-3">
+                                                    {/* Product Image */}
+                                                    <div className="flex-shrink-0 w-20 h-20 bg-gray-100 rounded-md overflow-hidden">
+                                                        <img
+                                                            src={item.image}
+                                                            alt={item.name}
+                                                            className="w-full h-full object-cover object-center"
+                                                        />
+                                                    </div>
+
+                                                    {/* Product Details */}
+                                                    <div className="flex-1">
+                                                        <div className="flex justify-between">
+                                                            <div>
+                                                                <h3 className="text-sm font-medium text-gray-900 line-clamp-1">
+                                                                    {item.name}
+                                                                </h3>
+
+                                                                {/* Color and Size */}
+                                                                <div className="mt-1 text-xs text-gray-500 space-y-0.5">
+                                                                    {item.color?.name && (
+                                                                        <p>Color: <span className="capitalize">{item.color.name}</span></p>
+                                                                    )}
+                                                                    {item.size?.size && (
+                                                                        <p>Size: <span className="uppercase">{item.size.size}</span></p>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Remove Button */}
+                                                            <button
+                                                                onClick={() => removeItem(item.id)}
+                                                                className="text-gray-400 hover:text-red-500 h-5"
+                                                                aria-label="Remove item"
+                                                            >
+                                                                <svg
+                                                                    className="h-5 w-5"
+                                                                    fill="currentColor"
+                                                                    viewBox="0 0 20 20"
+                                                                >
+                                                                    <path
+                                                                        fillRule="evenodd"
+                                                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                                        clipRule="evenodd"
+                                                                    />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Price and Quantity */}
+                                                        <div className="mt-2 flex items-center justify-between">
+                                                            <p className="text-sm font-medium text-gray-900">
+                                                                ৳{price.toFixed(2)}
                                                             </p>
-                                                        </div>
-                                                        <button
-                                                            onClick={() => removeItem(item.id)}
-                                                            className="ml-2 text-gray-400 hover:text-red-500"
-                                                        >
-                                                            <svg
-                                                                className="h-5 w-5"
-                                                                fill="currentColor"
-                                                                viewBox="0 0 20 20"
-                                                            >
-                                                                <path
-                                                                    fillRule="evenodd"
-                                                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                                    clipRule="evenodd"
-                                                                />
-                                                            </svg>
-                                                        </button>
-                                                    </div>
 
-                                                    <div className="mt-3 flex items-center justify-between">
-                                                        <div className="flex items-center border border-gray-300 rounded-md">
-                                                            <button
-                                                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                                className="px-2 py-1 sm:px-3 sm:py-1 text-gray-600 hover:text-gray-800"
-                                                            >
-                                                                <span className="sr-only">Decrease quantity</span>
-                                                                <svg
-                                                                    className="h-4 w-4 sm:h-5 sm:w-5"
-                                                                    fill="currentColor"
-                                                                    viewBox="0 0 20 20"
+                                                            {/* Quantity Selector */}
+                                                            <div className="flex items-center border border-gray-300 rounded-md">
+                                                                <button
+                                                                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                                    className="px-2 py-1 text-gray-600 hover:bg-gray-50"
                                                                 >
-                                                                    <path
-                                                                        fillRule="evenodd"
-                                                                        d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                                                                        clipRule="evenodd"
-                                                                    />
-                                                                </svg>
-                                                            </button>
-                                                            <span className="px-2 py-1 text-sm sm:text-base text-gray-900">
-                                                                {item.quantity}
-                                                            </span>
-                                                            <button
-                                                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                                className="px-2 py-1 sm:px-3 sm:py-1 text-gray-600 hover:text-gray-800"
-                                                            >
-                                                                <span className="sr-only">Increase quantity</span>
-                                                                <svg
-                                                                    className="h-4 w-4 sm:h-5 sm:w-5"
-                                                                    fill="currentColor"
-                                                                    viewBox="0 0 20 20"
+                                                                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                                                        <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                </button>
+                                                                <span className="px-2 text-sm text-gray-900 min-w-[30px] text-center">
+                                                                    {item.quantity}
+                                                                </span>
+                                                                <button
+                                                                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                                    className="px-2 py-1 text-gray-600 hover:bg-gray-50"
                                                                 >
-                                                                    <path
-                                                                        fillRule="evenodd"
-                                                                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                                                                        clipRule="evenodd"
-                                                                    />
-                                                                </svg>
-                                                            </button>
-                                                        </div>
-                                                        <div className="text-sm sm:text-base font-medium text-gray-900">
-                                                            ৳{(item.price * item.quantity).toFixed(2)}
+                                                                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                                                        <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </li>
-                                    ))}
+                                            </li>
+                                        );
+                                    })}
                                 </ul>
                             </div>
                         </div>
 
-                        {/* Order summary - unchanged */}
+                        {/* Order summary */}
                         <div className="mt-6 lg:mt-0 lg:col-span-5">
                             <div className="bg-white shadow-sm rounded-lg p-5 sm:p-6">
                                 <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Order Summary</h2>
@@ -349,11 +358,12 @@ const Cart = () => {
                                     </div>
 
                                     <div className="mt-4">
-                                        <button
+                                        <Link
+                                            to="/checkout"
                                             className="w-full flex justify-center items-center px-4 py-2 sm:px-6 sm:py-3 border border-transparent rounded-md shadow-sm text-sm sm:text-base font-medium text-white bg-green-600 hover:bg-green-700"
                                         >
                                             Proceed to Checkout
-                                        </button>
+                                        </Link>
                                     </div>
 
                                     <div className="mt-4 flex justify-center text-xs sm:text-sm text-center text-gray-500">

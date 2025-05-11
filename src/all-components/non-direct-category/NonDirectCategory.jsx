@@ -90,6 +90,19 @@ const NonDirectCategory = () => {
         }
     };
 
+    const handleOrderNow = (product) => {
+        const hasColorVariants = product.isColorVariants && product.colorVariants?.length > 0;
+
+        if (hasColorVariants) {
+            // If product has color variants, go to product details page
+            window.location.href = `/product/${product.productId || product.id}`;
+        } else {
+            // If no color variants, add to cart and go to cart page
+            addToCart(product);
+            window.location.href = '/cart';
+        }
+    };
+
     const products = data?.pages.flatMap(page => page.products) || [];
 
     if (isLoading) {
@@ -111,7 +124,7 @@ const NonDirectCategory = () => {
     }
 
     return (
-        <div className='w-[100%] xl:w-[90%] mx-auto px-3 sm:px-0'>
+        <div className=''>
             <h2 className="text-lg font-semibold mb-4">
                 {gender}'s Collection
             </h2>
@@ -171,13 +184,10 @@ const NonDirectCategory = () => {
                                                 onClick={() => handleAddToCartOrRedirect(product)}
                                                 className="flex-1 border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
                                             >
-                                                {hasColorVariants ? 'View Options' : 'Add to Cart'}
+                                                {hasColorVariants ? 'Options' : 'Add to Cart'}
                                             </button>
                                             <button
-                                                onClick={() => {
-                                                    handleAddToCartOrRedirect(product);
-                                                    window.location.href = '/checkout';
-                                                }}
+                                                onClick={() => handleOrderNow(product)}
                                                 className="flex-1 border border-green-600 bg-white text-green-600 hover:bg-green-600 hover:text-white py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
                                             >
                                                 Order Now

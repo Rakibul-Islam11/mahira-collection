@@ -12,7 +12,7 @@ import { Rating } from '@smastrom/react-rating';
 import '@smastrom/react-rating/style.css';
 import { toast } from 'react-toastify';
 import { IoLogoWhatsapp } from 'react-icons/io';
-import { IoCallSharp} from "react-icons/io5";
+import { IoCallSharp } from "react-icons/io5";
 
 const ProductDetails = () => {
     const { productId } = useParams();
@@ -79,13 +79,85 @@ const ProductDetails = () => {
             });
         };
 
-        // Always setup the listener when component mounts
         setupReviewsListener();
 
         return () => {
             if (unsubscribe) unsubscribe();
         };
-    }, [productId]); // Removed activeTab from dependencies
+    }, [productId]);
+
+    const addToCart = () => {
+        if (isOutOfStock()) {
+            toast.error('This product is out of stock');
+            return;
+        }
+
+        if (product.isColorVariants && activeColor?.sizes?.length > 0 && !selectedSize) {
+            toast.error('Please select a size');
+            return;
+        }
+
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        // Create cart item with all necessary information
+        const cartItem = {
+            id: product.id,
+            productId: product.productId,
+            name: product.name,
+            price: product.discount
+                ? (product.price - (product.price * (product.discount / 100))).toFixed(2)
+                : product.price,
+            image: product.isColorVariants ? activeColor?.images?.[0] : product.images?.[0],
+            quantity: 1,
+            color: product.isColorVariants ? {
+                name: activeColor?.colorName,
+                code: activeColor?.colorCode,
+                image: activeColor?.images?.[0]
+            } : null,
+            size: selectedSize ? {
+                size: selectedSize.size,
+                stock: selectedSize.stock
+            } : null,
+            productType: product.productType,
+            discount: product.discount || 0,
+            regularPrice: product.regularPrice || null
+        };
+
+        // Check if item already exists in cart
+        const existingItemIndex = cart.findIndex(item => {
+            // Basic match on product ID
+            if (item.id !== cartItem.id) return false;
+
+            // For color variants, check color match
+            if (product.isColorVariants && item.color?.name !== cartItem.color?.name) return false;
+
+            // For products with sizes, check size match
+            if (selectedSize && item.size?.size !== cartItem.size?.size) return false;
+
+            return true;
+        });
+
+        if (existingItemIndex >= 0) {
+            // Update quantity if item exists
+            cart[existingItemIndex].quantity += 1;
+            toast.success('Item quantity increased in cart');
+        } else {
+            // Add new item to cart
+            cart.push(cartItem);
+            toast.success('Item added to cart');
+        }
+
+        localStorage.setItem('cart', JSON.stringify(cart));
+
+        // Dispatch events to update cart count
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new CustomEvent('cartUpdated'));
+    };
+
+    const handleBuyNow = () => {
+        addToCart();
+        window.location.href = '/cart';
+    };
 
     const handleReviewSubmit = async (e) => {
         e.preventDefault();
@@ -95,7 +167,6 @@ const ProductDetails = () => {
             return;
         }
 
-        // Validate contact is either email or phone number
         const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reviewForm.contact);
         const isPhone = /^[0-9]{10,15}$/.test(reviewForm.contact);
 
@@ -117,11 +188,9 @@ const ProductDetails = () => {
             };
 
             if (editingReviewId) {
-                // Update existing review
                 await updateDoc(doc(db, 'reviews', editingReviewId), reviewData);
                 toast.success('Review updated successfully');
             } else {
-                // Add new review with auto-generated ID
                 await addDoc(collection(db, 'reviews'), reviewData);
                 toast.success('Review submitted successfully');
             }
@@ -165,6 +234,9 @@ const ProductDetails = () => {
 
     const isOutOfStock = () => {
         if (product.isColorVariants) {
+            if (activeColor?.sizes?.length > 0) {
+                return !activeColor.sizes.some(size => size.stock > 0);
+            }
             return activeColor?.stock < 1;
         } else {
             return product.stock < 1;
@@ -193,13 +265,12 @@ const ProductDetails = () => {
         return <div className="text-center py-8 text-lg">Product not found</div>;
     }
 
-    // Calculate average rating
     const averageRating = reviews.length > 0
         ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1)
         : 0;
 
     return (
-        <div className="w-[100%] xl:w-[90%] mx-auto p-2 sm:p-4">
+        <div className="pt-6">
             {/* Review Form Modal */}
             {showReviewForm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -500,7 +571,7 @@ const ProductDetails = () => {
                     {/* Product Name */}
                     <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">{product.name}</h1>
                     <a
-                        href="https://wa.me/8801407790565" // এখানে আপনার নম্বর দিন
+                        href="https://wa.me/8801407790565"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
@@ -611,6 +682,7 @@ const ProductDetails = () => {
                     {/* Action Buttons */}
                     <div className="flex gap-3 mb-2">
                         <button
+                            onClick={addToCart}
                             className={`flex-1 max-w-[180px] px-4 py-2.5 rounded-md text-sm sm:text-base font-medium transition-colors
                 ${isOutOfStock() || (activeColor?.sizes?.length > 0 && !selectedSize)
                                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -620,6 +692,7 @@ const ProductDetails = () => {
                             Add to Cart
                         </button>
                         <button
+                            onClick={handleBuyNow}
                             className={`flex-1 max-w-[180px] px-4 py-2.5 rounded-md text-sm sm:text-base font-medium transition-colors
                 ${isOutOfStock() || (activeColor?.sizes?.length > 0 && !selectedSize)
                                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -663,17 +736,6 @@ const ProductDetails = () => {
 
                 </div>
             </div>
-
-
-
-
-
-
-
-
-
-
-            
 
             {/* Description and Reviews Tabs Section */}
             <div className="mt-8 border-t pt-6">

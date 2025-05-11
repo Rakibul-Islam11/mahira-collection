@@ -2,7 +2,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { db } from '../../../firbase.config';
 import { useQuery } from '@tanstack/react-query';
 import { collection, getDocs } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 const AllProductsPage = () => {
     const productsPerPage = 3;
@@ -10,6 +10,7 @@ const AllProductsPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const currentPage = Number(searchParams.get('page')) || 1;
     const [loadingMore, setLoadingMore] = useState(false);
+    const productsContainerRef = useRef(null);
 
     // Fetch all products with React Query
     const { data: allProducts = [], isLoading } = useQuery({
@@ -41,17 +42,70 @@ const AllProductsPage = () => {
     // Calculate displayed products based on current page
     const displayedProducts = allProducts.slice(0, productsPerPage + (currentPage - 1) * loadMoreCount);
 
+    const addToCart = (product) => {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const existingItem = cart.find(item => item.id === product.id);
+
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({
+                id: product.id,
+                name: product.name,
+                price: product.discount
+                    ? (product.price - (product.price * (product.discount / 100))).toFixed(2)
+                    : product.price,
+                image: product.mainImage || product.images?.[0] || '/placeholder-product.jpg',
+                quantity: 1
+            });
+        }
+
+        localStorage.setItem('cart', JSON.stringify(cart));
+
+        // Dispatch events to update cart count
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new CustomEvent('cartUpdated'));
+    };
+
+    const handleAddToCartOrRedirect = (product) => {
+        const hasColorVariants = product.colorVariants && product.colorVariants.length > 0;
+
+        if (hasColorVariants) {
+            // Redirect to product details page if color variants exist
+            window.location.href = `/product/${product.id}`;
+        } else {
+            // Add to cart if no color variants
+            addToCart(product);
+        }
+    };
+
+    const handleOrderNow = (product) => {
+        const hasColorVariants = product.colorVariants && product.colorVariants.length > 0;
+
+        if (hasColorVariants) {
+            // Redirect to product details page if color variants exist
+            window.location.href = `/product/${product.id}`;
+        } else {
+            // Add to cart and redirect to cart page if no color variants
+            addToCart(product);
+            window.location.href = '/cart';
+        }
+    };
+
     const loadMoreProducts = async () => {
+        // Save current scroll position
+        const scrollPosition = window.scrollY || document.documentElement.scrollTop;
+
         setLoadingMore(true);
         await new Promise(resolve => setTimeout(resolve, 500));
         setSearchParams({ page: currentPage + 1 });
-        setLoadingMore(false);
-    };
 
-    // Scroll to top when page changes
-    useEffect(() => {
-        window.scrollTo(0, 0);
-    }, [currentPage]);
+        // Restore scroll position after state update
+        setTimeout(() => {
+            window.scrollTo(0, scrollPosition);
+            setLoadingMore(false);
+        }, 0);
+    };
 
     if (isLoading) {
         return (
@@ -68,7 +122,7 @@ const AllProductsPage = () => {
     }
 
     return (
-        <div className='w-[100%] xl:w-[90%] mx-auto px-[1px] sm:px-0'>
+        <div className='' ref={productsContainerRef}>
             <h2 className="text-lg font-semibold mb-4 mt-2">
                 All Products/
             </h2>
@@ -80,6 +134,7 @@ const AllProductsPage = () => {
                     <ul className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1 for_set-grid">
                         {displayedProducts.map((product) => {
                             const hasDiscount = product.discount && product.discount > 0;
+                            const hasColorVariants = product.colorVariants && product.colorVariants.length > 0;
 
                             return (
                                 <li key={product.id} className="border border-gray-400 rounded-lg overflow-hidden hover:shadow-md transition-shadow flex flex-col mb-6">
@@ -123,10 +178,16 @@ const AllProductsPage = () => {
 
                                     <div className="p-3 pt-2 border-t border-gray-100 space-y-2">
                                         <div className="flex flex-col md:flex-row gap-2 mb-0">
-                                            <button className="flex-1 border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-2 px-3 rounded text-sm font-medium transition-colors duration-200">
-                                                Add to Cart
+                                            <button
+                                                onClick={() => handleAddToCartOrRedirect(product)}
+                                                className="flex-1 border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
+                                            >
+                                                {hasColorVariants ? 'Options' : 'Add to Cart'}
                                             </button>
-                                            <button className="flex-1 border border-green-600 bg-white text-green-600 hover:bg-green-600 hover:text-white py-2 px-3 rounded text-sm font-medium transition-colors duration-200">
+                                            <button
+                                                onClick={() => handleOrderNow(product)}
+                                                className="flex-1 border border-green-600 bg-white text-green-600 hover:bg-green-600 hover:text-white py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
+                                            >
                                                 Order Now
                                             </button>
                                         </div>
