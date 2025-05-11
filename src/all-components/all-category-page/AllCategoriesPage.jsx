@@ -131,19 +131,23 @@ const AllProductsPage = () => {
                 <p className="text-center py-8">No products found.</p>
             ) : (
                 <>
-                    <ul className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1 for_set-grid">
+                    <ul className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3">
                         {displayedProducts.map((product) => {
                             const hasDiscount = product.discount && product.discount > 0;
                             const hasColorVariants = product.colorVariants && product.colorVariants.length > 0;
+                            const isMobile = window.innerWidth < 768;
+                            const truncatedName = isMobile && product.name.length > 15
+                                ? `${product.name.substring(0, 15)}...`
+                                : product.name;
 
                             return (
-                                <li key={product.id} className="border border-gray-400 rounded-lg overflow-hidden hover:shadow-md transition-shadow flex flex-col mb-6">
+                                <li key={product.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow flex flex-col">
                                     <div className="p-1 flex-grow flex flex-col">
-                                        <Link to={`/product/${product.id}`} className="relative">
+                                        <Link to={`/product/${product.id}`} className="relative block aspect-square">
                                             <img
                                                 src={product.mainImage || product.images?.[0] || '/placeholder-product.jpg'}
                                                 alt={product.name}
-                                                className="w-full h-[30] md:h-48 object-cover mb-2 rounded-lg"
+                                                className="w-full h-full object-cover mb-2 rounded-lg"
                                             />
                                             {hasDiscount && (
                                                 <div className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xs font-bold shadow-md">
@@ -151,54 +155,70 @@ const AllProductsPage = () => {
                                                 </div>
                                             )}
                                         </Link>
-                                        <h3 className="text-sm font-medium text-gray-800 line-clamp-2 mb-1">
-                                            {product.name}
-                                        </h3>
+
+                                        <div className="flex justify-between items-start">
+                                            <h3 className="text-sm font-medium text-gray-800 mb-1 flex-1">
+                                                {truncatedName}
+                                                {isMobile && product.name.length > 15 && (
+                                                    <Link
+                                                        to={`/product/${product.id}`}
+                                                        className="text-blue-500 inline-block ml-1"
+                                                        aria-label="View full product name"
+                                                    >
+                                                        •
+                                                    </Link>
+                                                )}
+                                            </h3>
+                                        </div>
 
                                         <div className="md:mt-auto">
-                                            <div className="flex flex-row items-center gap-2 space-y-0">
-                                                <div className="text-lg font-semibold text-gray-900">
-                                                    ৳
-                                                    {product.discount
-                                                        ? (product.price - (product.price * (product.discount / 100))).toFixed(2)
-                                                        : product.price}
-                                                </div>
+                                            <div className="flex flex-col md:space-y-1">
+                                                <div className="flex  items-center gap-2">
+                                                    <div className="text-base font-semibold text-gray-900">
+                                                        ৳
+                                                        {product.discount
+                                                            ? (product.price - (product.price * (product.discount / 100))).toFixed(2)
+                                                            : product.price}
+                                                    </div>
 
-                                                {product.regularPrice && (
-                                                    <div className="text-xs text-gray-500">
-                                                        <del>৳{product.regularPrice}</del>
+                                                    {product.regularPrice && (
+                                                        <div className="text-xs text-gray-500">
+                                                            <del>৳{product.regularPrice}</del>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {product.productType && (
+                                                    <div className="text-xs text-red-400">
+                                                        ({product.productType})
                                                     </div>
                                                 )}
-                                                <div>
-                                                    {product.productType && <p className='text-red-400'>({product.productType})</p>}
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="px-1 md:p-3 pt-2 border-t border-gray-100 space-y-2">
-                                        <div className="flex flex-col md:flex-row gap-1 md:gap-2 mb-0">
+                                    <div className="px-2 pb-2 border-t border-gray-100 space-y-2">
+                                        <div className="flex flex-col gap-1 md:gap-2">
                                             <button
                                                 onClick={() => handleAddToCartOrRedirect(product)}
-                                                className="flex-1 border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-0.5 md:py-3 px-3 rounded text-sm font-medium transition-colors duration-200"
+                                                className="w-full border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-0.5 md:py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
                                             >
                                                 {hasColorVariants ? 'Options' : 'Add to Cart'}
                                             </button>
                                             <button
                                                 onClick={() => handleOrderNow(product)}
-                                                className="flex-1 border border-green-600 bg-white text-green-600 hover:bg-green-600 hover:text-white py-0.5 md:py-3 px-3 rounded text-sm font-medium transition-colors duration-200"
+                                                className="w-full border border-green-600 bg-white text-green-600 hover:bg-green-600 hover:text-white py-0.5 md:py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
                                             >
                                                 Order Now
                                             </button>
                                         </div>
 
-                                        <div className="flex justify-between items-center pt-1 pb-2 md:pb-0">
-                                            <span className={`text-xs font-medium ${product.stock > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                                        <div className="flex justify-between items-center  text-xs">
+                                            <span className={`font-medium ${product.stock > 0 ? 'text-green-600' : 'text-red-500'}`}>
                                                 {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
                                             </span>
                                             {product.stock > 0 && (
-                                                <span className="text-[10px] md:text-xs text-gray-500">
-                                                    {product.stock} units available
+                                                <span className="text-gray-500">
+                                                    {product.stock} units
                                                 </span>
                                             )}
                                         </div>
