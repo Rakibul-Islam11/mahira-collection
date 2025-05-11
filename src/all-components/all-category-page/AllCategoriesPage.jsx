@@ -143,12 +143,15 @@ const AllProductsPage = () => {
                             return (
                                 <li key={product.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow flex flex-col">
                                     <div className="p-1 flex-grow flex flex-col">
-                                        <Link to={`/product/${product.id}`} className="relative block aspect-square">
-                                            <img
-                                                src={product.mainImage || product.images?.[0] || '/placeholder-product.jpg'}
-                                                alt={product.name}
-                                                className="w-full h-full object-cover mb-2 rounded-lg"
-                                            />
+                                        {/* Fixed size image container for mobile */}
+                                        <Link to={`/product/${product.id}`} className="relative block">
+                                            <div className="w-full h-[150px] md:h-auto md:aspect-square overflow-hidden">
+                                                <img
+                                                    src={product.mainImage || product.images?.[0] || '/placeholder-product.jpg'}
+                                                    alt={product.name}
+                                                    className="w-full h-full object-cover mb-2 rounded-lg"
+                                                />
+                                            </div>
                                             {hasDiscount && (
                                                 <div className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xs font-bold shadow-md">
                                                     {product.discount}%
@@ -173,7 +176,7 @@ const AllProductsPage = () => {
 
                                         <div className="md:mt-auto">
                                             <div className="flex flex-col md:space-y-1">
-                                                <div className="flex  items-center gap-2">
+                                                <div className="flex items-center gap-2">
                                                     <div className="text-base font-semibold text-gray-900">
                                                         ৳
                                                         {product.discount
@@ -212,7 +215,7 @@ const AllProductsPage = () => {
                                             </button>
                                         </div>
 
-                                        <div className="flex justify-between items-center  text-xs">
+                                        <div className="flex justify-between items-center text-xs">
                                             <span className={`font-medium ${product.stock > 0 ? 'text-green-600' : 'text-red-500'}`}>
                                                 {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
                                             </span>
