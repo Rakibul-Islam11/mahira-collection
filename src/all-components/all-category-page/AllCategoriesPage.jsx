@@ -138,12 +138,12 @@ const AllProductsPage = () => {
 
                             return (
                                 <li key={product.id} className="border border-gray-400 rounded-lg overflow-hidden hover:shadow-md transition-shadow flex flex-col mb-6">
-                                    <div className="p-3 flex-grow flex flex-col">
+                                    <div className="p-1 flex-grow flex flex-col">
                                         <Link to={`/product/${product.id}`} className="relative">
                                             <img
                                                 src={product.mainImage || product.images?.[0] || '/placeholder-product.jpg'}
                                                 alt={product.name}
-                                                className="w-full h-48 object-cover mb-2"
+                                                className="w-full h-[20] md:h-48 object-cover mb-2 rounded-lg"
                                             />
                                             {hasDiscount && (
                                                 <div className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xs font-bold shadow-md">
@@ -155,7 +155,7 @@ const AllProductsPage = () => {
                                             {product.name}
                                         </h3>
 
-                                        <div className="mt-auto">
+                                        <div className="md:mt-auto">
                                             <div className="flex flex-row items-center gap-2 space-y-0">
                                                 <div className="text-lg font-semibold text-gray-900">
                                                     ৳
@@ -176,28 +176,28 @@ const AllProductsPage = () => {
                                         </div>
                                     </div>
 
-                                    <div className="p-3 pt-2 border-t border-gray-100 space-y-2">
-                                        <div className="flex flex-col md:flex-row gap-2 mb-0">
+                                    <div className="px-1 md:p-3 pt-2 border-t border-gray-100 space-y-2">
+                                        <div className="flex flex-col md:flex-row gap-1 md:gap-2 mb-0">
                                             <button
                                                 onClick={() => handleAddToCartOrRedirect(product)}
-                                                className="flex-1 border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
+                                                className="flex-1 border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-0.5 md:py-3 px-3 rounded text-sm font-medium transition-colors duration-200"
                                             >
                                                 {hasColorVariants ? 'Options' : 'Add to Cart'}
                                             </button>
                                             <button
                                                 onClick={() => handleOrderNow(product)}
-                                                className="flex-1 border border-green-600 bg-white text-green-600 hover:bg-green-600 hover:text-white py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
+                                                className="flex-1 border border-green-600 bg-white text-green-600 hover:bg-green-600 hover:text-white py-0.5 md:py-3 px-3 rounded text-sm font-medium transition-colors duration-200"
                                             >
                                                 Order Now
                                             </button>
                                         </div>
 
-                                        <div className="flex justify-between items-center pt-1">
+                                        <div className="flex justify-between items-center pt-1 pb-2 md:pb-0">
                                             <span className={`text-xs font-medium ${product.stock > 0 ? 'text-green-600' : 'text-red-500'}`}>
                                                 {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
                                             </span>
                                             {product.stock > 0 && (
-                                                <span className="text-xs text-gray-500">
+                                                <span className="text-[10px] md:text-xs text-gray-500">
                                                     {product.stock} units available
                                                 </span>
                                             )}
