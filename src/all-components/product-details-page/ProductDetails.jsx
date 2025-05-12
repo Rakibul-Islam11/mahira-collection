@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { db } from '../../../firbase.config';
 import { useEffect, useState } from 'react';
-import { collection, getDocs, query, where, doc, setDoc, deleteDoc, updateDoc, onSnapshot, addDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc,  deleteDoc, updateDoc, onSnapshot, addDoc } from 'firebase/firestore';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Thumbs, FreeMode } from 'swiper/modules';
 import 'swiper/css';

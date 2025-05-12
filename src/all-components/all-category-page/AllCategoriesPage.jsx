@@ -2,7 +2,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { db } from '../../../firbase.config';
 import { useQuery } from '@tanstack/react-query';
 import { collection, getDocs } from 'firebase/firestore';
-import { useEffect, useState, useRef } from 'react';
+import {  useState, useRef } from 'react';
 
 const AllProductsPage = () => {
     const productsPerPage = 3;
@@ -136,8 +136,8 @@ const AllProductsPage = () => {
                             const hasDiscount = product.discount && product.discount > 0;
                             const hasColorVariants = product.colorVariants && product.colorVariants.length > 0;
                             const isMobile = window.innerWidth < 768;
-                            const truncatedName = isMobile && product.name.length > 15
-                                ? `${product.name.substring(0, 15)}...`
+                            const truncatedName = isMobile && product.name.length > 17
+                                ? `${product.name.substring(0, 17)}...`
                                 : product.name;
 
                             return (
@@ -160,15 +160,15 @@ const AllProductsPage = () => {
                                         </Link>
 
                                         <div className="flex justify-between items-start">
-                                            <h3 className="text-sm font-medium text-gray-800 mb-1 flex-1">
+                                            <h3 className="text-md font-medium text-gray-800 mb-1 flex-1">
                                                 {truncatedName}
-                                                {isMobile && product.name.length > 15 && (
+                                                {isMobile && product.name.length > 17 && (
                                                     <Link
                                                         to={`/product/${product.id}`}
                                                         className="text-blue-500 inline-block ml-1"
                                                         aria-label="View full product name"
                                                     >
-                                                        •
+                                                        ..
                                                     </Link>
                                                 )}
                                             </h3>
@@ -199,8 +199,8 @@ const AllProductsPage = () => {
                                         </div>
                                     </div>
 
-                                    <div className="px-2 pb-2 border-t border-gray-100 space-y-2">
-                                        <div className="flex flex-col gap-1 md:gap-2">
+                                    <div className="px-2 pb-2 border-t border-gray-100  space-y-2">
+                                        <div className="flex flex-col md:flex-row gap-1 md:gap-2 mb-[1px]">
                                             <button
                                                 onClick={() => handleAddToCartOrRedirect(product)}
                                                 className="w-full border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-0.5 md:py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
@@ -220,7 +220,7 @@ const AllProductsPage = () => {
                                                 {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
                                             </span>
                                             {product.stock > 0 && (
-                                                <span className="text-gray-500">
+                                                <span className="text-gray-500 text-[11px]">
                                                     {product.stock} units
                                                 </span>
                                             )}

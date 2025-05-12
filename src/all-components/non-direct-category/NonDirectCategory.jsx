@@ -1,12 +1,23 @@
 import { Link, useParams } from 'react-router-dom';
 import { db } from '../../../firbase.config';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { collection, query, where, getDocs, limit, startAfter } from 'firebase/firestore';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
 const NonDirectCategory = () => {
     const { gender } = useParams();
     const productsPerPage = 2;
+    const productsContainerRef = useRef(null);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const fetchProducts = async ({ pageParam = null }) => {
         const q = pageParam
@@ -21,7 +32,6 @@ const NonDirectCategory = () => {
                 where('gender', '==', gender),
                 limit(productsPerPage)
             );
-
 
         const querySnapshot = await getDocs(q);
         const fetchedProducts = [];
@@ -74,8 +84,6 @@ const NonDirectCategory = () => {
         }
 
         localStorage.setItem('cart', JSON.stringify(cart));
-
-        // Dispatch both events to ensure cart count updates everywhere
         window.dispatchEvent(new Event('storage'));
         window.dispatchEvent(new CustomEvent('cartUpdated'));
     };
@@ -94,10 +102,8 @@ const NonDirectCategory = () => {
         const hasColorVariants = product.isColorVariants && product.colorVariants?.length > 0;
 
         if (hasColorVariants) {
-            // If product has color variants, go to product details page
             window.location.href = `/product/${product.productId || product.id}`;
         } else {
-            // If no color variants, add to cart and go to cart page
             addToCart(product);
             window.location.href = '/cart';
         }
@@ -124,83 +130,108 @@ const NonDirectCategory = () => {
     }
 
     return (
-        <div className=''>
-            <h2 className="text-lg font-semibold mb-4">
+        <div className='' ref={productsContainerRef}>
+            <h2 className="text-lg font-semibold mb-4 mt-2">
                 {gender}'s Collection
             </h2>
 
             {products.length === 0 ? (
-                <p>No products found in this category.</p>
+                <p className="text-center py-8">No products found in this category.</p>
             ) : (
                 <>
-                    <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1 for_set-grid">
+                    <ul className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3">
                         {products.map((product) => {
                             const hasDiscount = product.discount && product.discount > 0;
                             const hasColorVariants = product.isColorVariants && product.colorVariants?.length > 0;
+                            const truncatedName = isMobile && product.name.length > 17
+                                ? `${product.name.substring(0, 17)}...`
+                                : product.name;
 
                             return (
-                                <li key={product.id} className="border border-gray-400 rounded-lg overflow-hidden hover:shadow-md transition-shadow flex flex-col mb-6">
+                                <li key={product.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow flex flex-col">
                                     <div className="p-1 flex-grow flex flex-col">
-                                        <Link to={`/product/${product.productId || product.id}`} className="relative">
-                                            <img
-                                                src={product.mainImage || product.images?.[0]}
-                                                alt={product.name}
-                                                className="w-full h-[30] md:h-48 object-cover mb-2 rounded-lg"
-                                            />
+                                        <Link to={`/product/${product.productId || product.id}`} className="relative block">
+                                            <div className="w-full h-[150px] md:h-auto md:aspect-square overflow-hidden">
+                                                <img
+                                                    src={product.mainImage || product.images?.[0] || '/placeholder-product.jpg'}
+                                                    alt={product.name}
+                                                    className="w-full h-full object-cover mb-2 rounded-lg"
+                                                />
+                                            </div>
                                             {hasDiscount && (
                                                 <div className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xs font-bold shadow-md">
                                                     {product.discount}%
                                                 </div>
                                             )}
                                         </Link>
-                                        <h3 className="text-sm font-medium text-gray-800 line-clamp-2 mb-1">
-                                            {product.name}
-                                        </h3>
 
-                                        <div className="mt-auto">
-                                            <div className="flex flex-row items-center gap-2 space-y-0">
-                                                <div className="text-lg font-semibold text-gray-900">
-                                                    ৳
-                                                    {product.discount
-                                                        ? (product.price - (product.price * (product.discount / 100))).toFixed(2)
-                                                        : product.price}
+                                        <div className="flex justify-between items-start">
+                                            <h3 className="text-sm font-medium text-gray-800 mb-1 flex-1">
+                                                {truncatedName}
+                                                {isMobile && product.name.length > 17 && (
+                                                    <Link
+                                                        to={`/product/${product.productId || product.id}`}
+                                                        className="text-blue-500 inline-block ml-1"
+                                                        aria-label="View full product name"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            window.location.href = `/product/${product.productId || product.id}`;
+                                                        }}
+                                                    >
+                                                        ..
+                                                    </Link>
+                                                )}
+                                            </h3>
+                                        </div>
+
+                                        <div className="md:mt-auto">
+                                            <div className="flex flex-col md:space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="text-base font-semibold text-gray-900">
+                                                        ৳
+                                                        {product.discount
+                                                            ? (product.price - (product.price * (product.discount / 100))).toFixed(2)
+                                                            : product.price}
+                                                    </div>
+
+                                                    {product.regularPrice && (
+                                                        <div className="text-xs text-gray-500">
+                                                            <del>৳{product.regularPrice}</del>
+                                                        </div>
+                                                    )}
                                                 </div>
-
-                                                {product.regularPrice && (
-                                                    <div className="text-xs text-gray-500">
-                                                        <del>৳{product.regularPrice}</del>
+                                                {product.productType && (
+                                                    <div className="text-xs text-red-400">
+                                                        ({product.productType})
                                                     </div>
                                                 )}
-                                                <div>
-                                                    {product.productType && <p className='text-red-400'>({product.productType})</p>}
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="p-3 pt-2 border-t border-gray-100 space-y-2">
-                                        <div className="flex gap-2 mb-0">
+                                    <div className="px-2 pb-2 border-t border-gray-100 space-y-2">
+                                        <div className="flex flex-col gap-1 md:gap-2 mb-[1px]">
                                             <button
                                                 onClick={() => handleAddToCartOrRedirect(product)}
-                                                className="flex-1 border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
+                                                className="w-full border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-0.5 md:py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
                                             >
                                                 {hasColorVariants ? 'Options' : 'Add to Cart'}
                                             </button>
                                             <button
                                                 onClick={() => handleOrderNow(product)}
-                                                className="flex-1 border border-green-600 bg-white text-green-600 hover:bg-green-600 hover:text-white py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
+                                                className="w-full border border-green-600 bg-white text-green-600 hover:bg-green-600 hover:text-white py-0.5 md:py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
                                             >
                                                 Order Now
                                             </button>
                                         </div>
 
-                                        <div className="flex justify-between items-center pt-1">
-                                            <span className={`text-xs font-medium ${product.stock > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                                        <div className="flex justify-between items-center text-xs">
+                                            <span className={`font-medium ${product.stock > 0 ? 'text-green-600' : 'text-red-500'}`}>
                                                 {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
                                             </span>
                                             {product.stock > 0 && (
-                                                <span className="text-xs text-gray-500">
-                                                    {product.stock} units available
+                                                <span className="text-gray-500 text-[11px]">
+                                                    {product.stock} units
                                                 </span>
                                             )}
                                         </div>
@@ -211,22 +242,22 @@ const NonDirectCategory = () => {
                     </ul>
 
                     {hasNextPage && (
-                        <div className="mt-6 text-center">
+                        <div className="flex justify-center mt-6 mb-10">
                             <button
                                 onClick={() => fetchNextPage()}
                                 disabled={isFetchingNextPage}
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded inline-flex items-center"
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md transition-colors duration-200 flex items-center justify-center min-w-32"
                             >
                                 {isFetchingNextPage ? (
                                     <>
-                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
                                         Loading...
                                     </>
                                 ) : (
-                                    'Load More Products'
+                                    "Load More"
                                 )}
                             </button>
                         </div>
