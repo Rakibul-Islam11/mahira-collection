@@ -9,10 +9,13 @@ const NonDirectCategory = () => {
     const productsPerPage = 2;
     const productsContainerRef = useRef(null);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
 
     useEffect(() => {
         const handleResize = () => {
-            setIsMobile(window.innerWidth < 768);
+            const width = window.innerWidth;
+            setIsMobile(width < 768);
+            setIsDesktop(width >= 768);
         };
 
         window.addEventListener('resize', handleResize);
@@ -143,9 +146,23 @@ const NonDirectCategory = () => {
                         {products.map((product) => {
                             const hasDiscount = product.discount && product.discount > 0;
                             const hasColorVariants = product.isColorVariants && product.colorVariants?.length > 0;
-                            const truncatedName = isMobile && product.name.length > 17
-                                ? `${product.name.substring(0, 17)}...`
+
+                            // Mobile truncation (17 chars)
+                            const mobileTruncatedName = isMobile && product.name.length > 17
+                                ? `${product.name.substring(0, 17)}.`
                                 : product.name;
+
+                            // Desktop truncation (30 chars)
+                            const desktopTruncatedName = isDesktop && product.name.length > 25
+                                ? `${product.name.substring(0, 25)}.`
+                                : product.name;
+
+                            // Final name to display
+                            const displayName = isMobile ? mobileTruncatedName : desktopTruncatedName;
+
+                            // Determine if we need to show clickable dots
+                            const showMobileDots = isMobile && product.name.length > 17;
+                            const showDesktopDots = isDesktop && product.name.length > 25;
 
                             return (
                                 <li key={product.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow flex flex-col">
@@ -166,9 +183,9 @@ const NonDirectCategory = () => {
                                         </Link>
 
                                         <div className="flex justify-between items-start">
-                                            <h3 className="text-sm font-medium text-gray-800 mb-1 flex-1">
-                                                {truncatedName}
-                                                {isMobile && product.name.length > 17 && (
+                                            <h3 className="text-md font-medium text-gray-800 mb-1 flex-1">
+                                                {displayName}
+                                                {(showMobileDots || showDesktopDots) && (
                                                     <Link
                                                         to={`/product/${product.productId || product.id}`}
                                                         className="text-blue-500 inline-block ml-1"
@@ -210,7 +227,7 @@ const NonDirectCategory = () => {
                                     </div>
 
                                     <div className="px-2 pb-2 border-t border-gray-100 space-y-2">
-                                        <div className="flex flex-col gap-1 md:gap-2 mb-[1px]">
+                                        <div className="flex flex-col md:flex-row gap-1 md:gap-2 mb-[1px]">
                                             <button
                                                 onClick={() => handleAddToCartOrRedirect(product)}
                                                 className="w-full border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-0.5 md:py-2 px-3 rounded text-sm font-medium transition-colors duration-200"

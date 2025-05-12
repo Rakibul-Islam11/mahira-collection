@@ -2,7 +2,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { db } from '../../../firbase.config';
 import { useQuery } from '@tanstack/react-query';
 import { collection, getDocs } from 'firebase/firestore';
-import {  useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 
 const AllProductsPage = () => {
     const productsPerPage = 3;
@@ -136,8 +136,10 @@ const AllProductsPage = () => {
                             const hasDiscount = product.discount && product.discount > 0;
                             const hasColorVariants = product.colorVariants && product.colorVariants.length > 0;
                             const isMobile = window.innerWidth < 768;
-                            const truncatedName = isMobile && product.name.length > 17
-                                ? `${product.name.substring(0, 17)}...`
+                            const maxLength = isMobile ? 17 : 25;
+                            const shouldTruncate = product.name.length > maxLength;
+                            const truncatedName = shouldTruncate
+                                ? `${product.name.substring(0, maxLength)}...`
                                 : product.name;
 
                             return (
@@ -162,7 +164,7 @@ const AllProductsPage = () => {
                                         <div className="flex justify-between items-start">
                                             <h3 className="text-md font-medium text-gray-800 mb-1 flex-1">
                                                 {truncatedName}
-                                                {isMobile && product.name.length > 17 && (
+                                                {shouldTruncate && (
                                                     <Link
                                                         to={`/product/${product.id}`}
                                                         className="text-blue-500 inline-block ml-1"

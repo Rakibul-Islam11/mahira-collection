@@ -36,7 +36,6 @@ const CategoryProducts = () => {
                 limit(productsPerPage)
             );
 
-
         const querySnapshot = await getDocs(q);
         const fetchedProducts = [];
 
@@ -143,12 +142,14 @@ const CategoryProducts = () => {
                 <p className="text-center py-8">No products found in this category.</p>
             ) : (
                 <>
-                    <ul className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3">
+                    <ul className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-1">
                         {products.map((product) => {
                             const hasDiscount = product.discount && product.discount > 0;
                             const hasColorVariants = product.colorVariants && product.colorVariants.length > 0;
-                            const truncatedName = isMobile && product.name.length > 17
-                                ? `${product.name.substring(0, 17)}...`
+                            const maxLength = isMobile ? 17 : 25;
+                            const shouldTruncate = product.name.length > maxLength;
+                            const truncatedName = shouldTruncate
+                                ? `${product.name.substring(0, maxLength)}...`
                                 : product.name;
 
                             return (
@@ -172,7 +173,7 @@ const CategoryProducts = () => {
                                         <div className="flex justify-between items-start">
                                             <h3 className="text-md font-medium text-gray-800 mb-1 flex-1">
                                                 {truncatedName}
-                                                {isMobile && product.name.length > 17 && (
+                                                {shouldTruncate && (
                                                     <Link
                                                         to={`/product/${product.productId || product.id}`}
                                                         className="text-blue-500 inline-block ml-1"
@@ -214,7 +215,7 @@ const CategoryProducts = () => {
                                     </div>
 
                                     <div className="px-2 pb-2 border-t border-gray-100 space-y-2">
-                                        <div className="flex flex-row md:flex-col gap-1 md:gap-2 mb-[1px]">
+                                        <div className="flex md:flex-row flex-col gap-1 md:gap-2 mb-[1px]">
                                             <button
                                                 onClick={() => handleAddToCartOrRedirect(product)}
                                                 className="w-full border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-0.5 md:py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
