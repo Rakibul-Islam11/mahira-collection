@@ -5,6 +5,7 @@ import TopNav from './all-components/top-navbar/TopNav'
 import MainNavbar from './all-components/main-navbar/MainNavbar'
 import ResMarque from './all-components/res-marque/ResMarque'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import Footer from './all-components/footer-page/Footer'
 const queryClient = new QueryClient();
 function App() {
 
@@ -17,6 +18,7 @@ function App() {
           <ResMarque></ResMarque>
           <MainNavbar></MainNavbar>
           <Outlet></Outlet>
+          <Footer></Footer>
         </QueryClientProvider>
         
       </div>

@@ -12,7 +12,6 @@ const Cart = () => {
 
     useEffect(() => {
         const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        // Ensure all prices are numbers
         const validatedCart = cart.map(item => ({
             ...item,
             price: typeof item.price === 'string' ? parseFloat(item.price) : item.price
@@ -111,21 +110,21 @@ const Cart = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-50  py-4 sm:py-8 px-2 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
-                <div className="text-center mb-8">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                <div className="text-center mb-6 sm:mb-8">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
                         Your Shopping Cart
                     </h1>
-                    <p className="mt-2 text-sm sm:text-base text-gray-500">
+                    <p className="mt-1 sm:mt-2 text-xs sm:text-sm md:text-base text-gray-500">
                         {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'} in your cart
                     </p>
                 </div>
 
                 {cartItems.length === 0 ? (
-                    <div className="text-center py-12">
+                    <div className="text-center py-8 sm:py-12">
                         <svg
-                            className="mx-auto h-20 w-20 text-gray-400"
+                            className="mx-auto h-16 sm:h-20 w-16 sm:w-20 text-gray-400"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -138,21 +137,21 @@ const Cart = () => {
                                 d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
                             />
                         </svg>
-                        <h2 className="mt-4 text-xl font-medium text-gray-900">Your cart is empty</h2>
-                        <p className="mt-1 text-gray-500">Start adding some items to your cart</p>
-                        <div className="mt-4">
+                        <h2 className="mt-3 sm:mt-4 text-lg sm:text-xl font-medium text-gray-900">Your cart is empty</h2>
+                        <p className="mt-1 text-xs sm:text-sm text-gray-500">Start adding some items to your cart</p>
+                        <div className="mt-3 sm:mt-4">
                             <Link
                                 to="/"
-                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                                className="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 border border-transparent rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
                             >
                                 Continue Shopping
                             </Link>
                         </div>
                     </div>
                 ) : (
-                    <div className="lg:grid lg:grid-cols-12 lg:gap-x-8 xl:gap-x-12">
-                        {/* Cart items - more compact design */}
-                        <div className="lg:col-span-7">
+                    <div className="lg:grid lg:grid-cols-12 lg:gap-x-6 xl:gap-x-8">
+                        {/* Cart items */}
+                        <div className="lg:col-span-7 xl:col-span-8">
                             <div className="bg-white shadow-sm rounded-lg overflow-hidden">
                                 <ul className="divide-y divide-gray-200">
                                     {cartItems.map((item) => {
@@ -160,10 +159,10 @@ const Cart = () => {
                                         const itemTotal = (price * item.quantity).toFixed(2);
 
                                         return (
-                                            <li key={item.id} className="py-3 px-4 border-b border-gray-200 last:border-b-0">
+                                            <li key={item.id} className="py-3 px-3 sm:px-4 border-b border-gray-200 last:border-b-0">
                                                 <div className="flex gap-3">
                                                     {/* Product Image */}
-                                                    <div className="flex-shrink-0 w-20 h-20 bg-gray-100 rounded-md overflow-hidden">
+                                                    <div className="flex-shrink-0 w-16 sm:w-20 h-16 sm:h-20 bg-gray-100 rounded-md overflow-hidden">
                                                         <img
                                                             src={item.image}
                                                             alt={item.name}
@@ -172,32 +171,34 @@ const Cart = () => {
                                                     </div>
 
                                                     {/* Product Details */}
-                                                    <div className="flex-1">
+                                                    <div className="flex-1 min-w-0">
                                                         <div className="flex justify-between">
-                                                            <div>
-                                                                <h3 className="text-sm font-medium text-gray-900 line-clamp-1">
+                                                            <div className="pr-2">
+                                                                <h3 className="text-xs sm:text-sm font-medium text-gray-900 line-clamp-2">
                                                                     {item.name}
                                                                 </h3>
 
                                                                 {/* Color and Size */}
-                                                                <div className="mt-1 text-xs text-gray-500 space-y-0.5">
-                                                                    {item.color?.name && (
-                                                                        <p>Color: <span className="capitalize">{item.color.name}</span></p>
-                                                                    )}
-                                                                    {item.size?.size && (
-                                                                        <p>Size: <span className="uppercase">{item.size.size}</span></p>
-                                                                    )}
-                                                                </div>
+                                                                {item.color?.name && (
+                                                                    <p className="mt-1 text-[10px] sm:text-xs text-gray-500">
+                                                                        Color: <span className="capitalize">{item.color.name}</span>
+                                                                    </p>
+                                                                )}
+                                                                {item.size?.size && (
+                                                                    <p className="mt-0.5 text-[10px] sm:text-xs text-gray-500">
+                                                                        Size: <span className="uppercase">{item.size.size}</span>
+                                                                    </p>
+                                                                )}
                                                             </div>
 
                                                             {/* Remove Button */}
                                                             <button
                                                                 onClick={() => removeItem(item.id)}
-                                                                className="text-gray-400 hover:text-red-500 h-5"
+                                                                className="text-gray-400 hover:text-red-500 h-5 flex-shrink-0"
                                                                 aria-label="Remove item"
                                                             >
                                                                 <svg
-                                                                    className="h-5 w-5"
+                                                                    className="h-4 w-4 sm:h-5 sm:w-5"
                                                                     fill="currentColor"
                                                                     viewBox="0 0 20 20"
                                                                 >
@@ -212,7 +213,7 @@ const Cart = () => {
 
                                                         {/* Price and Quantity */}
                                                         <div className="mt-2 flex items-center justify-between">
-                                                            <p className="text-sm font-medium text-gray-900">
+                                                            <p className="text-xs sm:text-sm font-medium text-gray-900">
                                                                 ৳{price.toFixed(2)}
                                                             </p>
 
@@ -220,20 +221,20 @@ const Cart = () => {
                                                             <div className="flex items-center border border-gray-300 rounded-md">
                                                                 <button
                                                                     onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                                    className="px-2 py-1 text-gray-600 hover:bg-gray-50"
+                                                                    className="px-1.5 sm:px-2 py-0.5 sm:py-1 text-gray-600 hover:bg-gray-50"
                                                                 >
-                                                                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="currentColor" viewBox="0 0 20 20">
                                                                         <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
                                                                     </svg>
                                                                 </button>
-                                                                <span className="px-2 text-sm text-gray-900 min-w-[30px] text-center">
+                                                                <span className="px-1 sm:px-2 text-xs sm:text-sm text-gray-900 min-w-[20px] sm:min-w-[30px] text-center">
                                                                     {item.quantity}
                                                                 </span>
                                                                 <button
                                                                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                                    className="px-2 py-1 text-gray-600 hover:bg-gray-50"
+                                                                    className="px-1.5 sm:px-2 py-0.5 sm:py-1 text-gray-600 hover:bg-gray-50"
                                                                 >
-                                                                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="currentColor" viewBox="0 0 20 20">
                                                                         <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
                                                                     </svg>
                                                                 </button>
@@ -249,21 +250,21 @@ const Cart = () => {
                         </div>
 
                         {/* Order summary */}
-                        <div className="mt-6 lg:mt-0 lg:col-span-5">
-                            <div className="bg-white shadow-sm rounded-lg p-5 sm:p-6">
-                                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Order Summary</h2>
+                        <div className="mt-4 sm:mt-6 lg:mt-0 lg:col-span-5 xl:col-span-4">
+                            <div className="bg-white shadow-sm rounded-lg p-4 sm:p-5 md:p-6">
+                                <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Order Summary</h2>
 
-                                <div className="space-y-3">
+                                <div className="space-y-2 sm:space-y-3">
                                     <div className="flex justify-between">
-                                        <span className="text-sm sm:text-base text-gray-600">Subtotal</span>
-                                        <span className="text-sm sm:text-base font-medium text-gray-900">
+                                        <span className="text-xs sm:text-sm md:text-base text-gray-600">Subtotal</span>
+                                        <span className="text-xs sm:text-sm md:text-base font-medium text-gray-900">
                                             ৳{calculateSubtotal().toFixed(2)}
                                         </span>
                                     </div>
 
-                                    <div className="border-t border-gray-200 pt-3">
-                                        <h3 className="text-xs sm:text-sm font-medium text-gray-900 mb-2">Shipping Location</h3>
-                                        <div className="space-y-2">
+                                    <div className="border-t border-gray-200 pt-2 sm:pt-3">
+                                        <h3 className="text-xs sm:text-sm font-medium text-gray-900 mb-1 sm:mb-2">Shipping Location</h3>
+                                        <div className="space-y-1 sm:space-y-2">
                                             <div className="flex items-center">
                                                 <input
                                                     id="inside"
@@ -272,7 +273,7 @@ const Cart = () => {
                                                     value="inside"
                                                     checked={shippingLocation === 'inside'}
                                                     onChange={handleShippingChange}
-                                                    className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                    className="h-3 w-3 sm:h-4 sm:w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
                                                 />
                                                 <label
                                                     htmlFor="inside"
@@ -289,7 +290,7 @@ const Cart = () => {
                                                     value="outside"
                                                     checked={shippingLocation === 'outside'}
                                                     onChange={handleShippingChange}
-                                                    className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                    className="h-3 w-3 sm:h-4 sm:w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
                                                 />
                                                 <label
                                                     htmlFor="outside"
@@ -302,13 +303,13 @@ const Cart = () => {
                                     </div>
 
                                     <div className="flex justify-between">
-                                        <span className="text-sm sm:text-base text-gray-600">Shipping</span>
-                                        <span className="text-sm sm:text-base font-medium text-gray-900">
+                                        <span className="text-xs sm:text-sm md:text-base text-gray-600">Shipping</span>
+                                        <span className="text-xs sm:text-sm md:text-base font-medium text-gray-900">
                                             ৳{shippingCharge.toFixed(2)}
                                         </span>
                                     </div>
 
-                                    <div className="border-t border-gray-200 pt-3">
+                                    <div className="border-t border-gray-200 pt-2 sm:pt-3">
                                         <label htmlFor="coupon" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                                             Coupon Code
                                         </label>
@@ -318,13 +319,13 @@ const Cart = () => {
                                                 id="coupon"
                                                 value={couponCode}
                                                 onChange={(e) => setCouponCode(e.target.value)}
-                                                className="focus:ring-blue-500 focus:border-blue-500 flex-1 block w-full rounded-none rounded-l-md sm:text-sm border-gray-300 py-2 px-3 border text-xs sm:text-base"
+                                                className="focus:ring-blue-500 focus:border-blue-500 flex-1 block w-full rounded-none rounded-l-md text-xs sm:text-sm border-gray-300 py-1.5 sm:py-2 px-2 sm:px-3 border"
                                                 placeholder="Enter coupon code"
                                             />
                                             <button
                                                 onClick={handleCouponApply}
                                                 disabled={isLoading}
-                                                className="-ml-px relative inline-flex items-center space-x-2 px-3 sm:px-4 py-2 border border-gray-300 text-xs sm:text-sm font-medium rounded-r-md text-white bg-blue-600 hover:bg-blue-700"
+                                                className="-ml-px relative inline-flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 text-xs sm:text-sm font-medium rounded-r-md text-white bg-blue-600 hover:bg-blue-700"
                                             >
                                                 {isLoading ? (
                                                     <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -344,29 +345,29 @@ const Cart = () => {
                                     </div>
 
                                     {discount > 0 && (
-                                        <div className="flex justify-between text-green-600 text-sm sm:text-base">
+                                        <div className="flex justify-between text-green-600 text-xs sm:text-sm md:text-base">
                                             <span>Discount</span>
                                             <span>-৳{discount.toFixed(2)}</span>
                                         </div>
                                     )}
 
-                                    <div className="border-t border-gray-200 pt-3">
-                                        <div className="flex justify-between text-base sm:text-lg font-bold text-gray-900">
+                                    <div className="border-t border-gray-200 pt-2 sm:pt-3">
+                                        <div className="flex justify-between text-sm sm:text-base md:text-lg font-bold text-gray-900">
                                             <span>Total</span>
                                             <span>৳{calculateTotal()}</span>
                                         </div>
                                     </div>
 
-                                    <div className="mt-4">
+                                    <div className="mt-3 sm:mt-4">
                                         <Link
                                             to="/checkout"
-                                            className="w-full flex justify-center items-center px-4 py-2 sm:px-6 sm:py-3 border border-transparent rounded-md shadow-sm text-sm sm:text-base font-medium text-white bg-green-600 hover:bg-green-700"
+                                            className="w-full flex justify-center items-center px-3 sm:px-4 py-1.5 sm:py-2 md:py-3 border border-transparent rounded-md shadow-sm text-xs sm:text-sm md:text-base font-medium text-white bg-green-600 hover:bg-green-700"
                                         >
                                             Proceed to Checkout
                                         </Link>
                                     </div>
 
-                                    <div className="mt-4 flex justify-center text-xs sm:text-sm text-center text-gray-500">
+                                    <div className="mt-2 sm:mt-3 flex justify-center text-xs sm:text-sm text-center text-gray-500">
                                         <p>
                                             or{' '}
                                             <Link
