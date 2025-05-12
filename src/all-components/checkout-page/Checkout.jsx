@@ -1,0 +1,584 @@
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { db } from '../../../firbase.config';
+import { collection, addDoc, getDocs } from 'firebase/firestore';
+
+const Checkout = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        name: '',
+        phone: '',
+        address: '',
+        notes: '',
+        agreeTerms: false,
+        paymentMethod: 'cash' // Default to cash on delivery
+    });
+    const [errors, setErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [orderSuccess, setOrderSuccess] = useState(false);
+    const [orderId, setOrderId] = useState('');
+    const [hasAnyProductWithType, setHasAnyProductWithType] = useState(false);
+    const [loadingProducts, setLoadingProducts] = useState(true);
+
+    // Try to get state from location first, then from localStorage
+    const getCheckoutState = () => {
+        if (location.state) {
+            return location.state;
+        }
+
+        const savedState = localStorage.getItem('checkoutState');
+        if (savedState) {
+            return JSON.parse(savedState);
+        }
+
+        return {
+            cartItems: [],
+            shipping: { location: 'inside', charge: 0 },
+            coupon: { code: '', discount: 0 }
+        };
+    };
+
+    const { cartItems, shipping, coupon } = getCheckoutState();
+
+    // Check if any product in cart has productType field
+    useEffect(() => {
+        const checkProductTypes = async () => {
+            try {
+                const productsRef = collection(db, 'products');
+                const snapshot = await getDocs(productsRef);
+
+                const cartProductIds = cartItems.map(item => item.id);
+                let foundAnyProductWithType = false;
+
+                snapshot.forEach(doc => {
+                    if (cartProductIds.includes(doc.id)) {
+                        if (doc.data().productType) {
+                            foundAnyProductWithType = true;
+                        }
+                    }
+                });
+
+                setHasAnyProductWithType(foundAnyProductWithType);
+                // Set default payment method based on product types
+                setFormData(prev => ({
+                    ...prev,
+                    paymentMethod: foundAnyProductWithType ? 'bkash' : 'cash'
+                }));
+                setLoadingProducts(false);
+            } catch (error) {
+                console.error('Error checking product types:', error);
+                setLoadingProducts(false);
+            }
+        };
+
+        if (cartItems.length > 0) {
+            checkProductTypes();
+        } else {
+            setLoadingProducts(false);
+        }
+    }, [cartItems]);
+
+    const formatPrice = (price) => {
+        const num = typeof price === 'string' ? parseFloat(price) : price;
+        return Math.floor(num).toLocaleString('en-US');
+    };
+
+    const calculateSubtotal = () => {
+        return cartItems.reduce((total, item) => {
+            const price = typeof item.price === 'number' ? item.price :
+                typeof item.price === 'string' ? parseFloat(item.price) : 0;
+            return total + (Math.floor(price) * item.quantity);
+        }, 0);
+    };
+
+    const calculateTotal = () => {
+        const subtotal = calculateSubtotal();
+        return Math.floor(subtotal + shipping.charge - coupon.discount);
+    };
+
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData({
+            ...formData,
+            [name]: type === 'checkbox' ? checked : value
+        });
+
+        if (errors[name]) {
+            setErrors({
+                ...errors,
+                [name]: ''
+            });
+        }
+    };
+
+    const validateForm = () => {
+        const newErrors = {};
+
+        if (!formData.name.trim()) {
+            newErrors.name = 'Name is required';
+        }
+
+        if (!formData.phone.trim()) {
+            newErrors.phone = 'Phone number is required';
+        } else if (!/^01[3-9]\d{8}$/.test(formData.phone)) {
+            newErrors.phone = 'Please enter a valid Bangladeshi phone number';
+        }
+
+        if (!formData.address.trim()) {
+            newErrors.address = 'Address is required';
+        } else if (formData.address.trim().length < 10) {
+            newErrors.address = 'Address should be at least 10 characters';
+        }
+
+        if (formData.notes.length > 100) {
+            newErrors.notes = 'Notes should not exceed 100 characters';
+        }
+
+        if (!formData.agreeTerms) {
+            newErrors.agreeTerms = 'You must agree to the terms and conditions';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!validateForm()) {
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            const orderData = {
+                customer: {
+                    name: formData.name,
+                    phone: formData.phone,
+                    address: formData.address,
+                    notes: formData.notes
+                },
+                items: cartItems,
+                shipping: shipping,
+                coupon: coupon,
+                subtotal: calculateSubtotal(),
+                total: calculateTotal(),
+                paymentMethod: formData.paymentMethod,
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            };
+
+            const docRef = await addDoc(collection(db, 'orders'), orderData);
+            setOrderId(docRef.id);
+            setOrderSuccess(true);
+
+            localStorage.removeItem('cart');
+            localStorage.removeItem('checkoutState');
+            window.dispatchEvent(new Event('storage'));
+
+        } catch (error) {
+            console.error('Error submitting order:', error);
+            setErrors({
+                ...errors,
+                submit: 'Failed to place order. Please try again.'
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    if (orderSuccess) {
+        return (
+            <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-3xl mx-auto">
+                    <div className="text-center bg-white p-6 sm:p-8 rounded-lg shadow-sm">
+                        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                            <svg
+                                className="h-6 w-6 text-green-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 13l4 4L19 7"
+                                />
+                            </svg>
+                        </div>
+                        <h2 className="mt-3 text-lg sm:text-xl font-medium text-gray-900">Order Placed Successfully!</h2>
+                        <p className="mt-2 text-sm sm:text-base text-gray-600">
+                            Your order ID is: <span className="font-medium">{orderId}</span>
+                        </p>
+                        <p className="mt-2 text-sm sm:text-base text-gray-600">
+                            We've sent a confirmation to your phone number.
+                        </p>
+                        <div className="mt-6">
+                            <button
+                                onClick={() => navigate('/')}
+                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                            >
+                                Continue Shopping
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (cartItems.length === 0) {
+        return (
+            <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-3xl mx-auto text-center">
+                    <h2 className="text-lg sm:text-xl font-medium text-gray-900">No Order Data Found</h2>
+                    <p className="mt-2 text-sm sm:text-base text-gray-600">
+                        Please add items to your cart before proceeding to checkout.
+                    </p>
+                    <div className="mt-4">
+                        <button
+                            onClick={() => navigate('/')}
+                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                        >
+                            Continue Shopping
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (loadingProducts) {
+        return (
+            <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="inline-flex items-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Loading payment options...</span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-50 py-4 sm:py-8 px-2 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto">
+                <div className="text-center mb-6 sm:mb-8">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
+                        Checkout
+                    </h1>
+                    <p className="mt-1 sm:mt-2 text-xs sm:text-sm md:text-base text-gray-500">
+                        Complete your purchase
+                    </p>
+                </div>
+
+                <div className="lg:grid lg:grid-cols-12 lg:gap-x-6 xl:gap-x-8">
+                    <div className="lg:col-span-7 xl:col-span-8">
+                        <div className="bg-white shadow-sm rounded-lg overflow-hidden p-4 sm:p-5 md:p-6">
+                            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-5">
+                                Customer Information
+                            </h2>
+
+                            <form onSubmit={handleSubmit}>
+                                <div className="space-y-4 sm:space-y-5">
+                                    {/* Payment Method Radio Buttons */}
+                                    <div>
+                                        <label className="block text-sm sm:text-base font-medium text-gray-700 mb-2">
+                                            Payment Method <span className="text-red-500">*</span>
+                                        </label>
+                                        <div className="space-y-2">
+                                            {hasAnyProductWithType ? (
+                                                <div className="flex items-center">
+                                                    <input
+                                                        id="payment-bkash"
+                                                        name="paymentMethod"
+                                                        type="radio"
+                                                        value="bkash"
+                                                        checked={formData.paymentMethod === 'bkash'}
+                                                        onChange={handleChange}
+                                                        className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                        required
+                                                    />
+                                                    <label htmlFor="payment-bkash" className="ml-2 block text-sm sm:text-base text-gray-700">
+                                                        bKash Payment (Required for selected products)
+                                                    </label>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            id="payment-cash"
+                                                            name="paymentMethod"
+                                                            type="radio"
+                                                            value="cash"
+                                                            checked={formData.paymentMethod === 'cash'}
+                                                            onChange={handleChange}
+                                                            className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                        />
+                                                        <label htmlFor="payment-cash" className="ml-2 block text-sm sm:text-base text-gray-700">
+                                                            Cash on Delivery
+                                                        </label>
+                                                    </div>
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            id="payment-bkash"
+                                                            name="paymentMethod"
+                                                            type="radio"
+                                                            value="bkash"
+                                                            checked={formData.paymentMethod === 'bkash'}
+                                                            onChange={handleChange}
+                                                            className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                        />
+                                                        <label htmlFor="payment-bkash" className="ml-2 block text-sm sm:text-base text-gray-700">
+                                                            bKash Payment
+                                                        </label>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                        {/* Show special notice only when bkash is mandatory */}
+                                        {hasAnyProductWithType && (
+                                            <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md text-sm text-yellow-700">
+                                                এখানে শুধু মাত্র pre-order product এর জন্য আপনাকে অবশ্যই পূর্বে পেমেন্ট করতে হবে। আর cart এ যদি non pre-order product থাকে তাহলে বাকি product গুলির জন্য cash on delivery দিতে চাইলে অনুগ্রহ করে product name গুলি order note এ mention করুন।
+                                            </div>
+                                        )}
+                                        {hasAnyProductWithType && (
+                                            <div className="mt-2 text-sm text-gray-500">
+                                                Note: Some products in your cart require bKash payment.
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Rest of the form fields remain the same */}
+                                    <div>
+                                        <label htmlFor="name" className="block text-sm sm:text-base font-medium text-gray-700">
+                                            Full Name <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="name"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm sm:text-base ${errors.name ? 'border-red-500' : 'border'}`}
+                                        />
+                                        {errors.name && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="phone" className="block text-sm sm:text-base font-medium text-gray-700">
+                                            Phone Number <span className="text-red-500">*</span>
+                                        </label>
+                                        <div className="mt-1 relative rounded-md shadow-sm">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span className="text-gray-500 sm:text-sm">+88</span>
+                                            </div>
+                                            <input
+                                                type="tel"
+                                                id="phone"
+                                                name="phone"
+                                                value={formData.phone}
+                                                onChange={handleChange}
+                                                placeholder="01XXXXXXXXX"
+                                                className={`block w-full pl-12 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm sm:text-base ${errors.phone ? 'border-red-500' : 'border'}`}
+                                            />
+                                        </div>
+                                        {errors.phone && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="address" className="block text-sm sm:text-base font-medium text-gray-700">
+                                            Delivery Address <span className="text-red-500">*</span>
+                                        </label>
+                                        <textarea
+                                            id="address"
+                                            name="address"
+                                            rows={3}
+                                            value={formData.address}
+                                            onChange={handleChange}
+                                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm sm:text-base ${errors.address ? 'border-red-500' : 'border'}`}
+                                            placeholder="House #, Road #, Area, District"
+                                        />
+                                        {errors.address && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.address}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="notes" className="block text-sm sm:text-base font-medium text-gray-700">
+                                            Order Notes (Optional)
+                                        </label>
+                                        <textarea
+                                            id="notes"
+                                            name="notes"
+                                            rows={2}
+                                            value={formData.notes}
+                                            onChange={handleChange}
+                                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm sm:text-base ${errors.notes ? 'border-red-500' : 'border'}`}
+                                            placeholder="Any special instructions for your order..."
+                                        />
+                                        <div className="flex justify-between mt-1">
+                                            {errors.notes && (
+                                                <p className="text-sm text-red-600">{errors.notes}</p>
+                                            )}
+                                            <p className={`text-xs ${formData.notes.length > 100 ? 'text-red-600' : 'text-gray-500'} ml-auto`}>
+                                                {formData.notes.length}/100 characters
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start">
+                                        <div className="flex items-center h-5">
+                                            <input
+                                                id="agreeTerms"
+                                                name="agreeTerms"
+                                                type="checkbox"
+                                                checked={formData.agreeTerms}
+                                                onChange={handleChange}
+                                                className={`h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 ${errors.agreeTerms ? 'border-red-500' : 'border'}`}
+                                            />
+                                        </div>
+                                        <div className="ml-3 text-sm">
+                                            <label htmlFor="agreeTerms" className="font-medium text-gray-700">
+                                                I agree to the <a href="/terms" className="text-blue-600 hover:text-blue-500">Terms and Conditions</a> <span className="text-red-500">*</span>
+                                            </label>
+                                            {errors.agreeTerms && (
+                                                <p className="mt-1 text-red-600">{errors.agreeTerms}</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-2">
+                                        <button
+                                            type="submit"
+                                            disabled={isSubmitting}
+                                            className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm sm:text-base font-medium text-white bg-green-600 hover:bg-green-700 disabled:bg-green-400"
+                                        >
+                                            {isSubmitting ? (
+                                                <>
+                                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    Processing...
+                                                </>
+                                            ) : (
+                                                'Place Order'
+                                            )}
+                                        </button>
+                                        {errors.submit && (
+                                            <p className="mt-2 text-sm text-red-600 text-center">{errors.submit}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    {/* Order Summary Section (remains the same) */}
+                    <div className="mt-4 sm:mt-6 lg:mt-0 lg:col-span-5 xl:col-span-4">
+                        <div className="bg-white shadow-sm rounded-lg p-4 sm:p-5 md:p-6">
+                            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-5">Order Summary</h2>
+
+                            <div className="space-y-3 sm:space-y-4">
+                                <div className="border-b border-gray-200 pb-3 sm:pb-4">
+                                    <h3 className="text-sm sm:text-base font-medium text-gray-900 mb-2 sm:mb-3">
+                                        {cartItems.length} {cartItems.length === 1 ? 'Item' : 'Items'}
+                                    </h3>
+                                    <ul className="divide-y divide-gray-200">
+                                        {cartItems.map((item) => {
+                                            const price = typeof item.price === 'number' ? item.price :
+                                                typeof item.price === 'string' ? parseFloat(item.price) : 0;
+                                            const itemTotal = Math.floor(price) * item.quantity;
+
+                                            return (
+                                                <li key={item.id} className="py-2 sm:py-3 flex justify-between">
+                                                    <div className="flex items-center">
+                                                        <div className="flex-shrink-0 w-10 h-10 bg-gray-100 rounded-md overflow-hidden mr-2 sm:mr-3">
+                                                            <img
+                                                                src={item.image}
+                                                                alt={item.name}
+                                                                className="w-full h-full object-cover object-center"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs sm:text-sm font-medium text-gray-900 line-clamp-1">
+                                                                {item.name}
+                                                            </p>
+                                                            <p className="text-xs text-gray-500">
+                                                                {item.quantity} × ৳{formatPrice(price)}
+                                                            </p>
+                                                            {item.size?.size && (
+                                                                <p className="text-[10px] text-gray-500">
+                                                                    Size: {item.size.size}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <p className="text-xs sm:text-sm font-medium text-gray-900">
+                                                        ৳{formatPrice(itemTotal)}
+                                                    </p>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                </div>
+
+                                <div className="space-y-2 sm:space-y-3">
+                                    <div className="flex justify-between">
+                                        <span className="text-sm sm:text-base text-gray-600">Subtotal</span>
+                                        <span className="text-sm sm:text-base font-medium text-gray-900">
+                                            ৳{formatPrice(calculateSubtotal())}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex justify-between">
+                                        <span className="text-sm sm:text-base text-gray-600">Shipping</span>
+                                        <span className="text-sm sm:text-base font-medium text-gray-900">
+                                            {shipping.charge > 0 ? (
+                                                `৳${formatPrice(shipping.charge)} (${shipping.location === 'inside' ? 'Inside Cox\'s Bazar' : 'Outside Cox\'s Bazar'})`
+                                            ) : (
+                                                <span className="text-green-600">Free</span>
+                                            )}
+                                        </span>
+                                    </div>
+
+                                    {coupon.discount > 0 && (
+                                        <div className="flex justify-between text-green-600">
+                                            <span className="text-sm sm:text-base">Discount</span>
+                                            <span className="text-sm sm:text-base font-medium">
+                                                -৳{formatPrice(coupon.discount)}
+                                                {coupon.code && ` (${coupon.code})`}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    <div className="border-t border-gray-200 pt-2 sm:pt-3">
+                                        <div className="flex justify-between text-sm sm:text-base md:text-lg font-bold text-gray-900">
+                                            <span>Total</span>
+                                            <span>৳{formatPrice(calculateTotal())}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Checkout;

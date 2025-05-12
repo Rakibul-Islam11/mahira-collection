@@ -20,6 +20,12 @@ const CategoryProducts = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // Format price to show in thousands with comma and without decimals
+    const formatPrice = (price) => {
+        if (!price) return '0';
+        return Math.round(price).toLocaleString('en-US');
+    };
+
     const fetchProducts = async ({ pageParam = null }) => {
         const q = pageParam
             ? query(
@@ -35,6 +41,7 @@ const CategoryProducts = () => {
                 where('subcategory', 'array-contains', category.toLowerCase()),
                 limit(productsPerPage)
             );
+
 
         const querySnapshot = await getDocs(q);
         const fetchedProducts = [];
@@ -79,8 +86,8 @@ const CategoryProducts = () => {
                 productId: product.productId,
                 name: product.name,
                 price: product.discount
-                    ? (product.price - (product.price * (product.discount / 100))).toFixed(2)
-                    : product.price,
+                    ? Math.round(product.price - (product.price * (product.discount / 100)))
+                    : Math.round(product.price),
                 image: product.mainImage,
                 quantity: 1
             });
@@ -193,15 +200,16 @@ const CategoryProducts = () => {
                                             <div className="flex flex-col md:space-y-1">
                                                 <div className="flex items-center gap-2">
                                                     <div className="text-base font-semibold text-gray-900">
-                                                        ৳
-                                                        {product.discount
-                                                            ? (product.price - (product.price * (product.discount / 100))).toFixed(2)
-                                                            : product.price}
+                                                        ৳{formatPrice(
+                                                            product.discount
+                                                                ? product.price - (product.price * (product.discount / 100))
+                                                                : product.price
+                                                        )}
                                                     </div>
 
                                                     {product.regularPrice && (
                                                         <div className="text-xs text-gray-500">
-                                                            <del>৳{product.regularPrice}</del>
+                                                            <del>৳{formatPrice(product.regularPrice)}</del>
                                                         </div>
                                                     )}
                                                 </div>

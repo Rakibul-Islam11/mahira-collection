@@ -11,6 +11,15 @@ const NonDirectCategory = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
 
+    // Format price to show in BDT with comma separators and without paisa
+    const formatPrice = (price) => {
+        if (typeof price !== 'number') price = parseFloat(price) || 0;
+        return new Intl.NumberFormat('en-BD', {
+            style: 'decimal',
+            maximumFractionDigits: 0
+        }).format(Math.round(price));
+    };
+
     useEffect(() => {
         const handleResize = () => {
             const width = window.innerWidth;
@@ -79,8 +88,8 @@ const NonDirectCategory = () => {
                 productId: product.productId,
                 name: product.name,
                 price: product.discount
-                    ? (product.price - (product.price * (product.discount / 100))).toFixed(2)
-                    : product.price,
+                    ? Math.round(product.price - (product.price * (product.discount / 100)))
+                    : Math.round(product.price),
                 image: product.mainImage || product.images?.[0],
                 quantity: 1
             });
@@ -164,6 +173,13 @@ const NonDirectCategory = () => {
                             const showMobileDots = isMobile && product.name.length > 17;
                             const showDesktopDots = isDesktop && product.name.length > 25;
 
+                            // Calculate prices without paisa
+                            const discountedPrice = hasDiscount
+                                ? Math.round(product.price - (product.price * (product.discount / 100)))
+                                : null;
+                            const displayPrice = hasDiscount ? discountedPrice : Math.round(product.price);
+                            const regularPrice = product.regularPrice ? Math.round(product.regularPrice) : null;
+
                             return (
                                 <li key={product.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow flex flex-col">
                                     <div className="p-1 flex-grow flex flex-col">
@@ -205,15 +221,12 @@ const NonDirectCategory = () => {
                                             <div className="flex flex-col md:space-y-1">
                                                 <div className="flex items-center gap-2">
                                                     <div className="text-base font-semibold text-gray-900">
-                                                        ৳
-                                                        {product.discount
-                                                            ? (product.price - (product.price * (product.discount / 100))).toFixed(2)
-                                                            : product.price}
+                                                        ৳{formatPrice(displayPrice)}
                                                     </div>
 
-                                                    {product.regularPrice && (
+                                                    {hasDiscount && regularPrice && (
                                                         <div className="text-xs text-gray-500">
-                                                            <del>৳{product.regularPrice}</del>
+                                                            <del>৳{formatPrice(regularPrice)}</del>
                                                         </div>
                                                     )}
                                                 </div>

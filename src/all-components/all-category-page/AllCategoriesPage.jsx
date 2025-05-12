@@ -12,6 +12,15 @@ const AllProductsPage = () => {
     const [loadingMore, setLoadingMore] = useState(false);
     const productsContainerRef = useRef(null);
 
+    // Format price to show in BDT with comma separators and without paisa
+    const formatPrice = (price) => {
+        if (typeof price !== 'number') price = parseFloat(price) || 0;
+        return new Intl.NumberFormat('en-BD', {
+            style: 'decimal',
+            maximumFractionDigits: 0
+        }).format(price);
+    };
+
     // Fetch all products with React Query
     const { data: allProducts = [], isLoading } = useQuery({
         queryKey: ['allProducts'],
@@ -53,8 +62,8 @@ const AllProductsPage = () => {
                 id: product.id,
                 name: product.name,
                 price: product.discount
-                    ? (product.price - (product.price * (product.discount / 100))).toFixed(2)
-                    : product.price,
+                    ? Math.round(product.price - (product.price * (product.discount / 100)))
+                    : Math.round(product.price),
                 image: product.mainImage || product.images?.[0] || '/placeholder-product.jpg',
                 quantity: 1
             });
@@ -142,6 +151,12 @@ const AllProductsPage = () => {
                                 ? `${product.name.substring(0, maxLength)}...`
                                 : product.name;
 
+                            // Calculate prices without paisa
+                            const discountedPrice = hasDiscount
+                                ? Math.round(product.price - (product.price * (product.discount / 100)))
+                                : null;
+                            const displayPrice = hasDiscount ? discountedPrice : Math.round(product.price);
+
                             return (
                                 <li key={product.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow flex flex-col">
                                     <div className="p-1 flex-grow flex flex-col">
@@ -180,15 +195,12 @@ const AllProductsPage = () => {
                                             <div className="flex flex-col md:space-y-1">
                                                 <div className="flex items-center gap-2">
                                                     <div className="text-base font-semibold text-gray-900">
-                                                        ৳
-                                                        {product.discount
-                                                            ? (product.price - (product.price * (product.discount / 100))).toFixed(2)
-                                                            : product.price}
+                                                        ৳{formatPrice(displayPrice)}
                                                     </div>
 
-                                                    {product.regularPrice && (
+                                                    {hasDiscount && (
                                                         <div className="text-xs text-gray-500">
-                                                            <del>৳{product.regularPrice}</del>
+                                                            <del>৳{formatPrice(Math.round(product.price))}</del>
                                                         </div>
                                                     )}
                                                 </div>

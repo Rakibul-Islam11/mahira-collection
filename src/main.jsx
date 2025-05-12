@@ -16,6 +16,8 @@ import NonDirectCategory from './all-components/non-direct-category/NonDirectCat
 import MenuCategoryForm from './all-components/up/MenuCategoryForm.jsx'
 import Cart from './all-components/Cart-page/Cart.jsx'
 import Footer from './all-components/footer-page/Footer.jsx'
+import Checkout from './all-components/checkout-page/Checkout.jsx'
+import OrderComplete from './all-components/OrderComplete-page/OrderComplete.jsx'
 
 const router = createBrowserRouter([
   {
@@ -67,6 +69,14 @@ const router = createBrowserRouter([
       {
         path: '/cart',
         element: <Cart></Cart>
+      },
+      {
+        path: '/checkout',
+        element: <Checkout></Checkout>
+      },
+      {
+        path: '/order-complete',
+        element: <OrderComplete></OrderComplete>
       },
       {
         path: '/footer',

@@ -35,7 +35,8 @@ const Up = () => {
         mainImage: '',
         isPreOrder: false,
         productType: '',
-        preOrderDescription: ''
+        preOrderDescription: '',
+        deliveryCharge: '' // নতুন ফিল্ড যোগ করা হয়েছে
     });
 
     // Handle input changes
@@ -228,6 +229,7 @@ const Up = () => {
                 gender: formData.gender,
                 mainImage: formData.mainImage,
                 isColorVariants: formData.isColorVariant,
+                deliveryCharge: formData.deliveryCharge === 'true', // স্ট্রিং থেকে বুলিয়ানে কনভার্ট
                 createdAt: new Date(),
                 ...(formData.isPreOrder && {
                     productType: 'pre-order',
@@ -288,7 +290,8 @@ const Up = () => {
                 mainImage: '',
                 isPreOrder: false,
                 productType: '',
-                preOrderDescription: ''
+                preOrderDescription: '',
+                deliveryCharge: '' // রিসেট করার সময় খালি স্ট্রিং সেট করা
             }));
 
         } catch (error) {
@@ -379,6 +382,22 @@ const Up = () => {
                         onChange={handleChange}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     />
+                </div>
+
+                {/* Delivery Charge Field */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Delivery Charge</label>
+                    <select
+                        name="deliveryCharge"
+                        value={formData.deliveryCharge}
+                        onChange={handleChange}
+                        required
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    >
+                        <option value="">Select Delivery Charge Option</option>
+                        <option value="true">Apply Delivery Charge</option>
+                        <option value="false">Free Delivery</option>
+                    </select>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

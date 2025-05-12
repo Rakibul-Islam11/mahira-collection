@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../../firbase.config';
 
 const Cart = () => {
     const [cartItems, setCartItems] = useState([]);
@@ -9,40 +11,82 @@ const Cart = () => {
     const [discount, setDiscount] = useState(0);
     const [couponMessage, setCouponMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [productsData, setProductsData] = useState({});
+    const navigate = useNavigate();
+
+    const formatPrice = (price) => {
+        const num = typeof price === 'string' ? parseFloat(price) : price;
+        return Math.floor(num).toLocaleString('en-US');
+    };
 
     useEffect(() => {
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        const validatedCart = cart.map(item => ({
-            ...item,
-            price: typeof item.price === 'string' ? parseFloat(item.price) : item.price
-        }));
-        setCartItems(validatedCart);
-        fetchShippingCharges();
-        setIsLoading(false);
+        const fetchCartItems = async () => {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const validatedCart = cart.map(item => ({
+                ...item,
+                price: typeof item.price === 'string' ? parseFloat(item.price) : item.price,
+                deliveryCharge: typeof item.deliveryCharge === 'undefined' ? true : item.deliveryCharge
+            }));
+
+            setCartItems(validatedCart);
+
+            const productsInfo = {};
+            for (const item of validatedCart) {
+                try {
+                    const productRef = doc(db, 'products', item.productId);
+                    const productSnap = await getDoc(productRef);
+                    if (productSnap.exists()) {
+                        productsInfo[item.productId] = productSnap.data();
+                    }
+                } catch (error) {
+                    console.error('Error fetching product data:', error);
+                }
+            }
+
+            setProductsData(productsInfo);
+            fetchShippingCharges();
+            setIsLoading(false);
+        };
+
+        fetchCartItems();
     }, []);
 
     const fetchShippingCharges = async () => {
         try {
-            await new Promise(resolve => setTimeout(resolve, 500));
             const mockData = { coxbazar: 50, outOfCoxbazar: 100 };
-            setShippingCharge(shippingLocation === 'inside' ? mockData.coxbazar : mockData.outOfCoxbazar);
+            const hasDeliveryCharge = cartItems.some(item => {
+                const productData = productsData[item.productId];
+                return (productData?.deliveryCharge === true ||
+                    (typeof productData?.deliveryCharge === 'undefined' &&
+                        (item.deliveryCharge === true || typeof item.deliveryCharge === 'undefined')));
+            });
+
+            const charge = hasDeliveryCharge
+                ? (shippingLocation === 'inside' ? mockData.coxbazar : mockData.outOfCoxbazar)
+                : 0;
+
+            setShippingCharge(charge);
         } catch (error) {
             console.error('Error fetching shipping charges:', error);
-            setShippingCharge(shippingLocation === 'inside' ? 50 : 100);
+            const hasDeliveryCharge = cartItems.some(item => {
+                const productData = productsData[item.productId];
+                return (productData?.deliveryCharge === true ||
+                    (typeof productData?.deliveryCharge === 'undefined' &&
+                        (item.deliveryCharge === true || typeof item.deliveryCharge === 'undefined')));
+            });
+            setShippingCharge(hasDeliveryCharge ? (shippingLocation === 'inside' ? 50 : 100) : 0);
         }
     };
 
     useEffect(() => {
         fetchShippingCharges();
-    }, [shippingLocation]);
+    }, [shippingLocation, cartItems, productsData]);
 
     const updateQuantity = (id, newQuantity) => {
         if (newQuantity < 1) return;
-
         const updatedCart = cartItems.map(item =>
             item.id === id ? { ...item, quantity: newQuantity } : item
         );
-
         localStorage.setItem('cart', JSON.stringify(updatedCart));
         setCartItems(updatedCart);
         window.dispatchEvent(new Event('storage'));
@@ -57,14 +101,15 @@ const Cart = () => {
 
     const calculateSubtotal = () => {
         return cartItems.reduce((total, item) => {
-            const price = typeof item.price === 'number' ? item.price : 0;
-            return total + (price * item.quantity);
+            const price = typeof item.price === 'number' ? item.price :
+                typeof item.price === 'string' ? parseFloat(item.price) : 0;
+            return total + (Math.floor(price) * item.quantity);
         }, 0);
     };
 
     const calculateTotal = () => {
         const subtotal = calculateSubtotal();
-        return (subtotal + shippingCharge - discount).toFixed(2);
+        return Math.floor(subtotal + shippingCharge - discount);
     };
 
     const handleShippingChange = (e) => {
@@ -88,7 +133,7 @@ const Cart = () => {
 
             if (mockResponse.valid) {
                 setDiscount(mockResponse.discountAmount);
-                setCouponMessage(`Coupon applied! Discount: ৳${mockResponse.discountAmount}`);
+                setCouponMessage(`Coupon applied! Discount: ৳${formatPrice(mockResponse.discountAmount)}`);
             } else {
                 setDiscount(0);
                 setCouponMessage(mockResponse.message);
@@ -101,6 +146,29 @@ const Cart = () => {
         }
     };
 
+    const handleCheckout = () => {
+        const checkoutData = {
+            cartItems: cartItems.map(item => ({
+                ...item,
+                price: typeof item.price === 'string' ? parseFloat(item.price) : item.price
+            })),
+            shipping: {
+                location: shippingLocation,
+                charge: shippingCharge
+            },
+            coupon: {
+                code: couponCode,
+                discount: discount
+            }
+        };
+
+        // Save to localStorage as backup
+        localStorage.setItem('checkoutState', JSON.stringify(checkoutData));
+
+        // Navigate with state
+        navigate('/checkout', { state: checkoutData });
+    };
+
     if (isLoading && cartItems.length === 0) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -109,8 +177,20 @@ const Cart = () => {
         );
     }
 
+    const hasDeliveryChargeItems = cartItems.some(item => {
+        const productData = productsData[item.productId];
+        return (productData?.deliveryCharge === true ||
+            (typeof productData?.deliveryCharge === 'undefined' &&
+                (item.deliveryCharge === true || typeof item.deliveryCharge === 'undefined')));
+    });
+
+    const freeShippingProducts = cartItems.filter(item => {
+        const productData = productsData[item.productId];
+        return productData?.deliveryCharge === false || item.deliveryCharge === false;
+    });
+
     return (
-        <div className="min-h-screen bg-gray-50  py-4 sm:py-8 px-2 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-50 py-4 sm:py-8 px-2 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-6 sm:mb-8">
                     <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
@@ -150,18 +230,19 @@ const Cart = () => {
                     </div>
                 ) : (
                     <div className="lg:grid lg:grid-cols-12 lg:gap-x-6 xl:gap-x-8">
-                        {/* Cart items */}
                         <div className="lg:col-span-7 xl:col-span-8">
                             <div className="bg-white shadow-sm rounded-lg overflow-hidden">
                                 <ul className="divide-y divide-gray-200">
                                     {cartItems.map((item) => {
-                                        const price = typeof item.price === 'number' ? item.price : 0;
-                                        const itemTotal = (price * item.quantity).toFixed(2);
+                                        const price = typeof item.price === 'number' ? item.price :
+                                            typeof item.price === 'string' ? parseFloat(item.price) : 0;
+                                        const itemTotal = Math.floor(price) * item.quantity;
+                                        const productData = productsData[item.productId];
+                                        const hasFreeDelivery = productData?.deliveryCharge === false || item.deliveryCharge === false;
 
                                         return (
                                             <li key={item.id} className="py-3 px-3 sm:px-4 border-b border-gray-200 last:border-b-0">
                                                 <div className="flex gap-3">
-                                                    {/* Product Image */}
                                                     <div className="flex-shrink-0 w-16 sm:w-20 h-16 sm:h-20 bg-gray-100 rounded-md overflow-hidden">
                                                         <img
                                                             src={item.image}
@@ -170,7 +251,6 @@ const Cart = () => {
                                                         />
                                                     </div>
 
-                                                    {/* Product Details */}
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex justify-between">
                                                             <div className="pr-2">
@@ -178,7 +258,6 @@ const Cart = () => {
                                                                     {item.name}
                                                                 </h3>
 
-                                                                {/* Color and Size */}
                                                                 {item.color?.name && (
                                                                     <p className="mt-1 text-[10px] sm:text-xs text-gray-500">
                                                                         Color: <span className="capitalize">{item.color.name}</span>
@@ -189,9 +268,13 @@ const Cart = () => {
                                                                         Size: <span className="uppercase">{item.size.size}</span>
                                                                     </p>
                                                                 )}
+                                                                {hasFreeDelivery && (
+                                                                    <p className="mt-0.5 text-[10px] sm:text-xs text-green-600">
+                                                                        Free Delivery
+                                                                    </p>
+                                                                )}
                                                             </div>
 
-                                                            {/* Remove Button */}
                                                             <button
                                                                 onClick={() => removeItem(item.id)}
                                                                 className="text-gray-400 hover:text-red-500 h-5 flex-shrink-0"
@@ -211,13 +294,11 @@ const Cart = () => {
                                                             </button>
                                                         </div>
 
-                                                        {/* Price and Quantity */}
                                                         <div className="mt-2 flex items-center justify-between">
                                                             <p className="text-xs sm:text-sm font-medium text-gray-900">
-                                                                ৳{price.toFixed(2)}
+                                                                ৳{formatPrice(price)}
                                                             </p>
 
-                                                            {/* Quantity Selector */}
                                                             <div className="flex items-center border border-gray-300 rounded-md">
                                                                 <button
                                                                     onClick={() => updateQuantity(item.id, item.quantity - 1)}
@@ -249,7 +330,6 @@ const Cart = () => {
                             </div>
                         </div>
 
-                        {/* Order summary */}
                         <div className="mt-4 sm:mt-6 lg:mt-0 lg:col-span-5 xl:col-span-4">
                             <div className="bg-white shadow-sm rounded-lg p-4 sm:p-5 md:p-6">
                                 <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Order Summary</h2>
@@ -258,56 +338,82 @@ const Cart = () => {
                                     <div className="flex justify-between">
                                         <span className="text-xs sm:text-sm md:text-base text-gray-600">Subtotal</span>
                                         <span className="text-xs sm:text-sm md:text-base font-medium text-gray-900">
-                                            ৳{calculateSubtotal().toFixed(2)}
+                                            ৳{formatPrice(calculateSubtotal())}
                                         </span>
                                     </div>
 
-                                    <div className="border-t border-gray-200 pt-2 sm:pt-3">
-                                        <h3 className="text-xs sm:text-sm font-medium text-gray-900 mb-1 sm:mb-2">Shipping Location</h3>
-                                        <div className="space-y-1 sm:space-y-2">
-                                            <div className="flex items-center">
-                                                <input
-                                                    id="inside"
-                                                    name="shipping"
-                                                    type="radio"
-                                                    value="inside"
-                                                    checked={shippingLocation === 'inside'}
-                                                    onChange={handleShippingChange}
-                                                    className="h-3 w-3 sm:h-4 sm:w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-                                                />
-                                                <label
-                                                    htmlFor="inside"
-                                                    className="ml-2 block text-xs sm:text-sm text-gray-700"
-                                                >
-                                                    Inside Cox's Bazar
-                                                </label>
+                                    {hasDeliveryChargeItems ? (
+                                        <>
+                                            <div className="border-t border-gray-200 pt-2 sm:pt-3">
+                                                <h3 className="text-xs sm:text-sm font-medium text-gray-900 mb-1 sm:mb-2">Shipping Location</h3>
+                                                <div className="space-y-1 sm:space-y-2">
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            id="inside"
+                                                            name="shipping"
+                                                            type="radio"
+                                                            value="inside"
+                                                            checked={shippingLocation === 'inside'}
+                                                            onChange={handleShippingChange}
+                                                            className="h-3 w-3 sm:h-4 sm:w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                        />
+                                                        <label
+                                                            htmlFor="inside"
+                                                            className="ml-2 block text-xs sm:text-sm text-gray-700"
+                                                        >
+                                                            Inside Cox's Bazar
+                                                        </label>
+                                                    </div>
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            id="outside"
+                                                            name="shipping"
+                                                            type="radio"
+                                                            value="outside"
+                                                            checked={shippingLocation === 'outside'}
+                                                            onChange={handleShippingChange}
+                                                            className="h-3 w-3 sm:h-4 sm:w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                        />
+                                                        <label
+                                                            htmlFor="outside"
+                                                            className="ml-2 block text-xs sm:text-sm text-gray-700"
+                                                        >
+                                                            Outside Cox's Bazar
+                                                        </label>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center">
-                                                <input
-                                                    id="outside"
-                                                    name="shipping"
-                                                    type="radio"
-                                                    value="outside"
-                                                    checked={shippingLocation === 'outside'}
-                                                    onChange={handleShippingChange}
-                                                    className="h-3 w-3 sm:h-4 sm:w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-                                                />
-                                                <label
-                                                    htmlFor="outside"
-                                                    className="ml-2 block text-xs sm:text-sm text-gray-700"
-                                                >
-                                                    Outside Cox's Bazar
-                                                </label>
+
+                                            <div className="flex justify-between">
+                                                <span className="text-xs sm:text-sm md:text-base text-gray-600">Shipping</span>
+                                                <span className="text-xs sm:text-sm md:text-base font-medium text-gray-900">
+                                                    ৳{formatPrice(shippingCharge)}
+                                                </span>
                                             </div>
+                                        </>
+                                    ) : (
+                                        <div className="flex justify-between text-green-600">
+                                            <span className="text-xs sm:text-sm md:text-base">Shipping</span>
+                                            <span className="text-xs sm:text-sm md:text-base font-medium">Free</span>
                                         </div>
-                                    </div>
+                                    )}
 
-                                    <div className="flex justify-between">
-                                        <span className="text-xs sm:text-sm md:text-base text-gray-600">Shipping</span>
-                                        <span className="text-xs sm:text-sm md:text-base font-medium text-gray-900">
-                                            ৳{shippingCharge.toFixed(2)}
-                                        </span>
-                                    </div>
+                                    {freeShippingProducts.length > 0 && (
+                                        <div className="border-t border-gray-200 pt-2 sm:pt-3">
+                                            <p className="text-xs sm:text-sm text-green-600 mb-1">You got free shipping for:</p>
+                                            <ul className="text-xs sm:text-sm text-gray-600">
+                                                {freeShippingProducts.map((product) => (
+                                                    <li key={product.id} className="flex items-start">
+                                                        <span className="mr-1">•</span>
+                                                        <span className="line-clamp-1">{product.name}</span>
+                                                        {product.size?.size && (
+                                                            <span className="ml-1 text-gray-500">(Size: {product.size.size})</span>
+                                                        )}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
 
                                     <div className="border-t border-gray-200 pt-2 sm:pt-3">
                                         <label htmlFor="coupon" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
@@ -347,24 +453,24 @@ const Cart = () => {
                                     {discount > 0 && (
                                         <div className="flex justify-between text-green-600 text-xs sm:text-sm md:text-base">
                                             <span>Discount</span>
-                                            <span>-৳{discount.toFixed(2)}</span>
+                                            <span>-৳{formatPrice(discount)}</span>
                                         </div>
                                     )}
 
                                     <div className="border-t border-gray-200 pt-2 sm:pt-3">
                                         <div className="flex justify-between text-sm sm:text-base md:text-lg font-bold text-gray-900">
                                             <span>Total</span>
-                                            <span>৳{calculateTotal()}</span>
+                                            <span>৳{formatPrice(calculateTotal())}</span>
                                         </div>
                                     </div>
 
                                     <div className="mt-3 sm:mt-4">
-                                        <Link
-                                            to="/checkout"
+                                        <button
+                                            onClick={handleCheckout}
                                             className="w-full flex justify-center items-center px-3 sm:px-4 py-1.5 sm:py-2 md:py-3 border border-transparent rounded-md shadow-sm text-xs sm:text-sm md:text-base font-medium text-white bg-green-600 hover:bg-green-700"
                                         >
                                             Proceed to Checkout
-                                        </Link>
+                                        </button>
                                     </div>
 
                                     <div className="mt-2 sm:mt-3 flex justify-center text-xs sm:text-sm text-center text-gray-500">
