@@ -125,7 +125,7 @@ const NonDirectCategory = () => {
 
     if (isLoading) {
         return (
-            <div className="flex justify-center items-center h-64">
+            <div className="flex justify-center items-center min-h-screen">
                 <div className="text-center">
                     <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -142,7 +142,7 @@ const NonDirectCategory = () => {
     }
 
     return (
-        <div className='' ref={productsContainerRef}>
+        <div className='min-h-screen p-4' ref={productsContainerRef}>
             <h2 className="text-lg font-semibold mb-4 mt-2">
                 {gender}'s Collection
             </h2>

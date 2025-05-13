@@ -1,81 +1,96 @@
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin, Clock } from 'lucide-react';
-import navbrandIMG from '../../assets/images/Untitled design (1).png'; // Make sure to import your image
+import {
+    Facebook,
+    Instagram,
+    Twitter,
+    Mail,
+    Phone,
+    MapPin,
+    Clock
+} from 'lucide-react';
+import navbrandIMG from '../../assets/images/480353899_615347981104853_3842057109669510985_n (1).jpg';
 
 const Footer = () => {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="bg-gray-100 text-gray-700 play-regular border-t border-gray-200 w-full">
-            {/* Brand Logo Section - Full Width */}
-            <div className="w-full bg-white py-6 flex justify-center border-b border-gray-200">
-                <Link to="/" className="flex justify-center">
-                    <img
-                        src={navbrandIMG}
-                        alt="Brand Logo"
-                        className="h-[120px] w-auto md:h-[150px]"
-                    />
-                </Link>
-            </div>
-
+        <footer className="bg-gray-100 mt-20 text-gray-700 play-regular w-full border-t border-gray-200">
+           
             {/* Main Footer Content */}
-            <div className="w-full px-4 sm:px-6 lg:px-8 py-12">
-                <div className="max-w-7xl mx-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        {/* About Section */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-gray-900">About Us</h3>
-                            <p className="text-sm">
-                                We are dedicated to providing the best products and services to our customers with quality and care.
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+                <div className=' flex flex-row items-center justify-between gap-8'>
+                    {/* Brand Logo */}
+                    <div className="w-full   flex justify-start border-b border-gray-200">
+                        <Link to="/" className="flex justify-center">
+                            <img
+                                src={navbrandIMG}
+                                alt="Brand Logo"
+                                className=" h-24 md:h-40 object-cover"
+                            />
+                        </Link>
+                    </div>
+                    <div>
+                        <p>Mahira Collection
+                            Mahira Collection একটি অনলাইন ফ্যাশন শপ যেখানে মেয়েদের ও ছেলেদের জন্য আধুনিক এবং ট্রেন্ডি পোশাক ও অ্যাক্সেসরিজ পাওয়া যায়।
+                            আমাদের সংগ্রহে রয়েছে পার্টি, ক্যাজুয়াল ও ট্র্যাডিশনাল সব ধরনের পোশাক।
+                            মেয়েদের জন্য রয়েছে দোপাট্টা, কুর্তি, শাড়ি, হিজাব, ব্যাগ ও গহনার দারুণ কালেকশন।
+                            ছেলেদের জন্য রয়েছে পাঞ্জাবি, শার্ট, টি-শার্ট, ঘড়ি, চশমা ও জুতা।
+                            Mahira Collection সব বয়সের জন্য মানসম্মত পণ্যের নিশ্চয়তা দেয়।
+                            আমরা নতুন ট্রেন্ড ও সিজন অনুযায়ী কালেকশন আপডেট করি।
+                            দেশজুড়ে দ্রুত এবং নির্ভরযোগ্য ডেলিভারি সার্ভিস রয়েছে।
+                            আমাদের ওয়েবসাইট ব্যবহার করা সহজ এবং মোবাইল ফ্রেন্ডলি।
+                            বিশেষ ছাড় ও অফারের মাধ্যমে আমরা কাস্টমারদের জন্য শপিং আরও উপভোগ্য করে তুলি।
+                            Mahira Collection মানে স্টাইল, আরাম ও গুণগত মানের নিশ্চয়তা।</p>
+                    </div>
+                </div>
+                
+                <div className="max-w-7xl mx-auto pt-10">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">About Us</h3>
+                            <p className="text-sm leading-relaxed mb-4">
+                                We are dedicated to providing the best products and services to our
+                                customers with quality and care.
                             </p>
                             <div className="flex space-x-4">
-                                <a href="#" className="text-gray-600 hover:text-gray-900">
+                                <a href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
                                     <Facebook size={20} />
                                 </a>
-                                <a href="#" className="text-gray-600 hover:text-gray-900">
+                                <a href="#" className="text-gray-500 hover:text-pink-500 transition-colors">
                                     <Instagram size={20} />
                                 </a>
-                                <a href="#" className="text-gray-600 hover:text-gray-900">
+                                <a href="#" className="text-gray-500 hover:text-sky-500 transition-colors">
                                     <Twitter size={20} />
                                 </a>
                             </div>
                         </div>
 
                         {/* Quick Links */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-gray-900">Quick Links</h3>
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Links</h3>
                             <ul className="space-y-2 text-sm">
-                                <li>
-                                    <Link to="/" className="hover:text-gray-900 transition-colors">
-                                        Home
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link to="/about" className="hover:text-gray-900 transition-colors">
-                                        About Us
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link to="/products" className="hover:text-gray-900 transition-colors">
-                                        Products
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link to="/contact" className="hover:text-gray-900 transition-colors">
-                                        Contact
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link to="/privacy-policy" className="hover:text-gray-900 transition-colors">
-                                        Privacy Policy
-                                    </Link>
-                                </li>
+                                {[
+                                    { name: 'Home', path: '/' },
+                                    { name: 'About Us', path: '/about' },
+                                    { name: 'Products', path: '/products' },
+                                    { name: 'Contact', path: '/contact' },
+                                    { name: 'Privacy Policy', path: '/privacy-policy' },
+                                ].map((link, index) => (
+                                    <li key={index}>
+                                        <Link
+                                            to={link.path}
+                                            className="hover:text-blue-600 transition-colors"
+                                        >
+                                            {link.name}
+                                        </Link>
+                                    </li>
+                                ))}
                             </ul>
                         </div>
 
                         {/* Contact Info */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-gray-900">Contact Us</h3>
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Us</h3>
                             <div className="space-y-3 text-sm">
                                 <div className="flex items-start space-x-3">
                                     <MapPin size={18} className="mt-0.5 flex-shrink-0" />
@@ -83,13 +98,13 @@ const Footer = () => {
                                 </div>
                                 <div className="flex items-center space-x-3">
                                     <Mail size={18} />
-                                    <a href="mailto:info@example.com" className="hover:text-gray-900">
+                                    <a href="mailto:info@example.com" className="hover:text-blue-600">
                                         info@example.com
                                     </a>
                                 </div>
                                 <div className="flex items-center space-x-3">
                                     <Phone size={18} />
-                                    <a href="tel:+1234567890" className="hover:text-gray-900">
+                                    <a href="tel:+1234567890" className="hover:text-blue-600">
                                         +1 234 567 890
                                     </a>
                                 </div>
@@ -97,12 +112,12 @@ const Footer = () => {
                         </div>
 
                         {/* Opening Hours */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-gray-900">Opening Hours</h3>
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Opening Hours</h3>
                             <div className="space-y-2 text-sm">
                                 <div className="flex items-center space-x-3">
                                     <Clock size={18} />
-                                    <span>Monday - Friday: 9am - 8pm</span>
+                                    <span>Mon - Fri: 9am - 8pm</span>
                                 </div>
                                 <div className="flex items-center space-x-3">
                                     <Clock size={18} />
@@ -116,25 +131,30 @@ const Footer = () => {
                         </div>
                     </div>
 
-                    {/* Newsletter */}
-                    <div className="mt-12 pt-8 border-t border-gray-200">
-                        <div className="text-center">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Subscribe to Our Newsletter</h3>
-                            <div className="max-w-md mx-auto flex">
+                    {/* Newsletter Section */}
+                    <div className="mt-4 pt-2 border-t border-gray-200">
+                        <div className="text-center max-w-lg mx-auto">
+                            <h3 className="text-lg font-semibold text-gray-900 mt-1 mb-2">
+                                Subscribe to Our Newsletter
+                            </h3>
+                            <form className="flex flex-col sm:flex-row items-center justify-center gap-3">
                                 <input
                                     type="email"
                                     placeholder="Your email address"
-                                    className="flex-grow px-4 py-2 border border-gray-300 rounded-l focus:outline-none focus:ring-1 focus:ring-gray-400"
+                                    className="w-full sm:w-auto flex-grow px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
                                 />
-                                <button className="bg-gray-800 text-white px-4 py-2 rounded-r hover:bg-gray-700 transition-colors">
+                                <button
+                                    type="submit"
+                                    className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                >
                                     Subscribe
                                 </button>
-                            </div>
+                            </form>
                         </div>
                     </div>
 
                     {/* Copyright */}
-                    <div className="mt-8 pt-8 border-t border-gray-200 text-center text-sm">
+                    <div className="mt-2 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
                         <p>&copy; {currentYear} Your Company Name. All rights reserved.</p>
                     </div>
                 </div>

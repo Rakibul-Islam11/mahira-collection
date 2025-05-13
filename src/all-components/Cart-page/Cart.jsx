@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firbase.config';
 
@@ -11,9 +12,9 @@ const Cart = () => {
     const [discount, setDiscount] = useState(0);
     const [couponMessage, setCouponMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
-    const [productsData, setProductsData] = useState({});
-    const navigate = useNavigate();
+    const [productsData, setProductsData] = useState({}); // প্রোডাক্ট ডেটা স্টোর করার জন্য স্টেট
 
+    // Format number with commas and remove decimal part
     const formatPrice = (price) => {
         const num = typeof price === 'string' ? parseFloat(price) : price;
         return Math.floor(num).toLocaleString('en-US');
@@ -25,11 +26,13 @@ const Cart = () => {
             const validatedCart = cart.map(item => ({
                 ...item,
                 price: typeof item.price === 'string' ? parseFloat(item.price) : item.price,
+                // Set default deliveryCharge to true if not exists
                 deliveryCharge: typeof item.deliveryCharge === 'undefined' ? true : item.deliveryCharge
             }));
 
             setCartItems(validatedCart);
 
+            // Fetch product data from Firestore for each item in cart
             const productsInfo = {};
             for (const item of validatedCart) {
                 try {
@@ -53,14 +56,19 @@ const Cart = () => {
 
     const fetchShippingCharges = async () => {
         try {
+            await new Promise(resolve => setTimeout(resolve, 500));
             const mockData = { coxbazar: 50, outOfCoxbazar: 100 };
+
+            // Check if any item in cart has deliveryCharge true or undefined (which we set to true)
             const hasDeliveryCharge = cartItems.some(item => {
                 const productData = productsData[item.productId];
+                // Firestore ডাটাবেসে deliveryCharge থাকলে সেটা ব্যবহার করবে, নাহলে আইটেমের deliveryCharge ব্যবহার করবে
                 return (productData?.deliveryCharge === true ||
                     (typeof productData?.deliveryCharge === 'undefined' &&
                         (item.deliveryCharge === true || typeof item.deliveryCharge === 'undefined')));
             });
 
+            // Only apply shipping charge if at least one item requires delivery charge
             const charge = hasDeliveryCharge
                 ? (shippingLocation === 'inside' ? mockData.coxbazar : mockData.outOfCoxbazar)
                 : 0;
@@ -84,9 +92,11 @@ const Cart = () => {
 
     const updateQuantity = (id, newQuantity) => {
         if (newQuantity < 1) return;
+
         const updatedCart = cartItems.map(item =>
             item.id === id ? { ...item, quantity: newQuantity } : item
         );
+
         localStorage.setItem('cart', JSON.stringify(updatedCart));
         setCartItems(updatedCart);
         window.dispatchEvent(new Event('storage'));
@@ -146,29 +156,6 @@ const Cart = () => {
         }
     };
 
-    const handleCheckout = () => {
-        const checkoutData = {
-            cartItems: cartItems.map(item => ({
-                ...item,
-                price: typeof item.price === 'string' ? parseFloat(item.price) : item.price
-            })),
-            shipping: {
-                location: shippingLocation,
-                charge: shippingCharge
-            },
-            coupon: {
-                code: couponCode,
-                discount: discount
-            }
-        };
-
-        // Save to localStorage as backup
-        localStorage.setItem('checkoutState', JSON.stringify(checkoutData));
-
-        // Navigate with state
-        navigate('/checkout', { state: checkoutData });
-    };
-
     if (isLoading && cartItems.length === 0) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -177,6 +164,7 @@ const Cart = () => {
         );
     }
 
+    // Check if any item requires shipping charge (true or undefined)
     const hasDeliveryChargeItems = cartItems.some(item => {
         const productData = productsData[item.productId];
         return (productData?.deliveryCharge === true ||
@@ -184,6 +172,7 @@ const Cart = () => {
                 (item.deliveryCharge === true || typeof item.deliveryCharge === 'undefined')));
     });
 
+    // Get list of products with free shipping (explicitly false)
     const freeShippingProducts = cartItems.filter(item => {
         const productData = productsData[item.productId];
         return productData?.deliveryCharge === false || item.deliveryCharge === false;
@@ -230,6 +219,7 @@ const Cart = () => {
                     </div>
                 ) : (
                     <div className="lg:grid lg:grid-cols-12 lg:gap-x-6 xl:gap-x-8">
+                        {/* Cart items */}
                         <div className="lg:col-span-7 xl:col-span-8">
                             <div className="bg-white shadow-sm rounded-lg overflow-hidden">
                                 <ul className="divide-y divide-gray-200">
@@ -243,6 +233,7 @@ const Cart = () => {
                                         return (
                                             <li key={item.id} className="py-3 px-3 sm:px-4 border-b border-gray-200 last:border-b-0">
                                                 <div className="flex gap-3">
+                                                    {/* Product Image */}
                                                     <div className="flex-shrink-0 w-16 sm:w-20 h-16 sm:h-20 bg-gray-100 rounded-md overflow-hidden">
                                                         <img
                                                             src={item.image}
@@ -251,6 +242,7 @@ const Cart = () => {
                                                         />
                                                     </div>
 
+                                                    {/* Product Details */}
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex justify-between">
                                                             <div className="pr-2">
@@ -258,6 +250,7 @@ const Cart = () => {
                                                                     {item.name}
                                                                 </h3>
 
+                                                                {/* Color and Size */}
                                                                 {item.color?.name && (
                                                                     <p className="mt-1 text-[10px] sm:text-xs text-gray-500">
                                                                         Color: <span className="capitalize">{item.color.name}</span>
@@ -275,6 +268,7 @@ const Cart = () => {
                                                                 )}
                                                             </div>
 
+                                                            {/* Remove Button */}
                                                             <button
                                                                 onClick={() => removeItem(item.id)}
                                                                 className="text-gray-400 hover:text-red-500 h-5 flex-shrink-0"
@@ -294,11 +288,13 @@ const Cart = () => {
                                                             </button>
                                                         </div>
 
+                                                        {/* Price and Quantity */}
                                                         <div className="mt-2 flex items-center justify-between">
                                                             <p className="text-xs sm:text-sm font-medium text-gray-900">
                                                                 ৳{formatPrice(price)}
                                                             </p>
 
+                                                            {/* Quantity Selector */}
                                                             <div className="flex items-center border border-gray-300 rounded-md">
                                                                 <button
                                                                     onClick={() => updateQuantity(item.id, item.quantity - 1)}
@@ -330,6 +326,7 @@ const Cart = () => {
                             </div>
                         </div>
 
+                        {/* Order summary */}
                         <div className="mt-4 sm:mt-6 lg:mt-0 lg:col-span-5 xl:col-span-4">
                             <div className="bg-white shadow-sm rounded-lg p-4 sm:p-5 md:p-6">
                                 <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Order Summary</h2>
@@ -398,6 +395,7 @@ const Cart = () => {
                                         </div>
                                     )}
 
+                                    {/* Display free shipping products */}
                                     {freeShippingProducts.length > 0 && (
                                         <div className="border-t border-gray-200 pt-2 sm:pt-3">
                                             <p className="text-xs sm:text-sm text-green-600 mb-1">You got free shipping for:</p>
@@ -465,12 +463,28 @@ const Cart = () => {
                                     </div>
 
                                     <div className="mt-3 sm:mt-4">
-                                        <button
-                                            onClick={handleCheckout}
-                                            className="w-full flex justify-center items-center px-3 sm:px-4 py-1.5 sm:py-2 md:py-3 border border-transparent rounded-md shadow-sm text-xs sm:text-sm md:text-base font-medium text-white bg-green-600 hover:bg-green-700"
-                                        >
-                                            Proceed to Checkout
-                                        </button>
+                                            <Link
+                                                to={{
+                                                    pathname: "/checkout",
+                                                    state: {
+                                                        cartItems: cartItems.map(item => ({
+                                                            ...item,
+                                                            price: typeof item.price === 'string' ? parseFloat(item.price) : item.price
+                                                        })),
+                                                        shipping: {
+                                                            location: shippingLocation,
+                                                            charge: shippingCharge
+                                                        },
+                                                        coupon: {
+                                                            code: couponCode,
+                                                            discount: discount
+                                                        }
+                                                    }
+                                                }}
+                                                className="w-full flex justify-center items-center px-3 sm:px-4 py-1.5 sm:py-2 md:py-3 border border-transparent rounded-md shadow-sm text-xs sm:text-sm md:text-base font-medium text-white bg-green-600 hover:bg-green-700"
+                                            >
+                                                Proceed to Checkout
+                                            </Link>
                                     </div>
 
                                     <div className="mt-2 sm:mt-3 flex justify-center text-xs sm:text-sm text-center text-gray-500">

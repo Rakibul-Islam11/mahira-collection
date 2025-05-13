@@ -1,0 +1,9 @@
+.ftr_img {
+    width: 100%;
+    height: 200px;
+    background-image: url('../../assets/images/480353899_615347981104853_3842057109669510985_n\ \(1\).jpg');
+    /* ✅ path from public folder */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}

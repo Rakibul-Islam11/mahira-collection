@@ -3,11 +3,11 @@ import Hero from "../hero-section/Hero";
 
 const Home = () => {
     return (
-        <div >
+        <div className="bg-gray-100 ">
             <div>
                 <Hero></Hero>
             </div>
-            <div>
+            <div className="px-4">
                 <div>
                     <AllProductsPage></AllProductsPage>
                 </div>

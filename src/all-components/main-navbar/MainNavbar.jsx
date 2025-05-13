@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { db } from '../../../firbase.config';
+import CartSidebar from '../cart-sidebar-page/CartSidebar';
+
 
 const MainNavbar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -13,6 +15,8 @@ const MainNavbar = () => {
     const [menuItems, setMenuItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [cartCount, setCartCount] = useState(0);
+    const [isCartOpen, setIsCartOpen] = useState(false); // সাইডবার স্টেট
+    const [cartItems, setCartItems] = useState([]); // কার্ট আইটেম স্টেট
 
     useEffect(() => {
         const fetchMenuItems = async () => {
@@ -41,6 +45,7 @@ const MainNavbar = () => {
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
             const count = cart.reduce((total, item) => total + item.quantity, 0);
             setCartCount(count);
+            setCartItems(cart); // কার্ট আইটেম আপডেট করুন
         };
 
         // Initial load
@@ -146,14 +151,17 @@ const MainNavbar = () => {
                             <Link to="/cart" className="text-gray-700 hover:text-black">Orders</Link>
 
                             {/* Cart Icon */}
-                            <Link to="/cart" className="text-gray-700 hover:text-black relative">
+                            <button
+                                onClick={() => setIsCartOpen(true)}
+                                className="text-gray-700 hover:text-black relative"
+                            >
                                 <ShoppingCart size={20} />
                                 {cartCount > 0 && (
                                     <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                                         {cartCount}
                                     </span>
                                 )}
-                            </Link>
+                            </button>
 
                             {/* Search */}
                             <div className="relative flex items-center">
@@ -250,7 +258,13 @@ const MainNavbar = () => {
 
                         <Link to="/orders" className="block font-semibold">Orders</Link>
 
-                        <Link to="/cart" className="flex items-center space-x-2 relative">
+                        <button
+                            onClick={() => {
+                                setIsMobileMenuOpen(false);
+                                setIsCartOpen(true);
+                            }}
+                            className="flex items-center space-x-2 relative"
+                        >
                             <ShoppingCart size={20} />
                             <span>Cart</span>
                             {cartCount > 0 && (
@@ -258,7 +272,7 @@ const MainNavbar = () => {
                                     {cartCount}
                                 </span>
                             )}
-                        </Link>
+                        </button>
 
                         <div>
                             <button
@@ -295,7 +309,10 @@ const MainNavbar = () => {
                         <span className="text-xs mt-1">Category</span>
                     </Link>
 
-                    <Link to="/cart" className="flex flex-col items-center justify-center text-gray-700 hover:text-black p-2 relative">
+                    <button
+                        onClick={() => setIsCartOpen(true)}
+                        className="flex flex-col items-center justify-center text-gray-700 hover:text-black p-2 relative"
+                    >
                         <ShoppingCart size={20} />
                         <span className="text-xs mt-1">Cart</span>
                         {cartCount > 0 && (
@@ -303,7 +320,7 @@ const MainNavbar = () => {
                                 {cartCount}
                             </span>
                         )}
-                    </Link>
+                    </button>
 
                     <a href="tel:+1234567890" className="flex flex-col items-center justify-center text-gray-700 hover:text-black p-2">
                         <Phone size={20} />
@@ -311,6 +328,13 @@ const MainNavbar = () => {
                     </a>
                 </div>
             </div>
+
+            {/* Cart Sidebar */}
+            <CartSidebar
+                isOpen={isCartOpen}
+                onClose={() => setIsCartOpen(false)}
+                cartItems={cartItems}
+            />
         </>
     );
 };
