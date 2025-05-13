@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { ShoppingCart, Menu, X, Search, Home, List, Phone, Package } from 'lucide-react';
-import navbrandIMG from '../../assets/images/Untitled design (1).png';
+import navbrandIMG from '../../assets/images/Screenshot_4-Photoroom-removebg-preview.png'
 import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { db } from '../../../firbase.config';
 import CartSidebar from '../cart-sidebar-page/CartSidebar';
-
 
 const MainNavbar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -15,8 +14,12 @@ const MainNavbar = () => {
     const [menuItems, setMenuItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [cartCount, setCartCount] = useState(0);
-    const [isCartOpen, setIsCartOpen] = useState(false); // সাইডবার স্টেট
-    const [cartItems, setCartItems] = useState([]); // কার্ট আইটেম স্টেট
+    const [isCartOpen, setIsCartOpen] = useState(false);
+    const [cartItems, setCartItems] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [products, setProducts] = useState([]);
+    const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
     useEffect(() => {
         const fetchMenuItems = async () => {
@@ -37,7 +40,25 @@ const MainNavbar = () => {
             }
         };
 
+        const fetchProducts = async () => {
+            try {
+                const productsRef = collection(db, 'products');
+                const q = query(productsRef);
+                const querySnapshot = await getDocs(q);
+
+                const productsData = [];
+                querySnapshot.forEach((doc) => {
+                    productsData.push({ id: doc.id, ...doc.data() });
+                });
+
+                setProducts(productsData);
+            } catch (error) {
+                console.error("Error fetching products:", error);
+            }
+        };
+
         fetchMenuItems();
+        fetchProducts();
     }, []);
 
     useEffect(() => {
@@ -45,13 +66,10 @@ const MainNavbar = () => {
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
             const count = cart.reduce((total, item) => total + item.quantity, 0);
             setCartCount(count);
-            setCartItems(cart); // কার্ট আইটেম আপডেট করুন
+            setCartItems(cart);
         };
 
-        // Initial load
         updateCartCount();
-
-        // Add event listeners
         window.addEventListener('storage', updateCartCount);
         window.addEventListener('cartUpdated', updateCartCount);
 
@@ -61,12 +79,47 @@ const MainNavbar = () => {
         };
     }, []);
 
+    useEffect(() => {
+        if (searchQuery.trim() === '') {
+            setSearchResults([]);
+            return;
+        }
+
+        const queryLower = searchQuery.toLowerCase();
+        const results = products.filter(product => {
+            const nameMatch = product.id.toLowerCase().includes(queryLower);
+            const tagsMatch = product.tags && product.tags.some(tag =>
+                tag.toLowerCase().includes(queryLower)
+            );
+            return nameMatch || tagsMatch;
+        });
+
+        setSearchResults(results.slice(0, 5));
+    }, [searchQuery, products]);
+
     const toggleDropdown = (menu) => {
         setOpenDropdown(prev => prev === menu ? null : menu);
     };
 
     const openMobileMenu = () => {
         setIsMobileMenuOpen(true);
+    };
+
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+    };
+
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        if (searchResults.length > 0) {
+            window.location.href = `/product/${searchResults[0].id}`;
+        }
+    };
+
+    const toggleMobileSearch = () => {
+        setMobileSearchOpen(!mobileSearchOpen);
+        setSearchQuery('');
+        setSearchResults([]);
     };
 
     if (loading) {
@@ -76,6 +129,53 @@ const MainNavbar = () => {
     return (
         <>
             <header className="bg-white border-y border-gray-200 play-regular">
+                {/* Mobile Search Bar - Full Width */}
+                {mobileSearchOpen && (
+                    <div className="md:hidden bg-white p-3 border-b border-gray-200">
+                        <div className="relative">
+                            <form onSubmit={handleSearchSubmit} className="flex items-center">
+                                <input
+                                    type="text"
+                                    placeholder="Search products..."
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    value={searchQuery}
+                                    onChange={handleSearchChange}
+                                    autoFocus
+                                />
+                                <button
+                                    type="button"
+                                    onClick={toggleMobileSearch}
+                                    className="ml-2 text-gray-500 hover:text-gray-700"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </form>
+                            {searchResults.length > 0 && (
+                                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg rounded-md">
+                                    {searchResults.map(product => (
+                                        <Link
+                                            key={product.id}
+                                            to={`/product/${product.id}`}
+                                            className="block px-4 py-2 hover:bg-gray-100 border-b border-gray-100 last:border-b-0"
+                                            onClick={() => {
+                                                setMobileSearchOpen(false);
+                                                setSearchQuery('');
+                                            }}
+                                        >
+                                            {product.id}
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                            {searchQuery && searchResults.length === 0 && (
+                                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg rounded-md px-4 py-2 text-gray-500">
+                                    No products found
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Desktop Layout */}
                     <div className="hidden md:flex justify-between items-center h-16">
@@ -122,7 +222,7 @@ const MainNavbar = () => {
                                 <img
                                     src={navbrandIMG}
                                     alt="Brand Logo"
-                                    className="h-[190px] w-auto"
+                                    className="h-[130px] w-auto"
                                 />
                             </Link>
                         </div>
@@ -176,12 +276,39 @@ const MainNavbar = () => {
                                     <Search size={20} />
                                 </button>
                                 {isSearchOpen && (
-                                    <div className="absolute top-full mt-2 z-50 right-0 bg-white border border-gray-200 shadow-md p-2 rounded">
-                                        <input
-                                            type="text"
-                                            placeholder="Search..."
-                                            className="px-2 py-1 border border-gray-300 rounded w-48 focus:outline-none"
-                                        />
+                                    <div className="absolute top-full mt-2 z-50 right-0 bg-white border border-gray-200 shadow-md p-2 rounded w-64">
+                                        <form onSubmit={handleSearchSubmit}>
+                                            <input
+                                                type="text"
+                                                placeholder="Search products..."
+                                                className="px-2 py-1 border border-gray-300 rounded w-full focus:outline-none"
+                                                value={searchQuery}
+                                                onChange={handleSearchChange}
+                                                autoFocus
+                                            />
+                                        </form>
+                                        {searchResults.length > 0 && (
+                                            <div className="mt-2 border-t border-gray-200 pt-2">
+                                                {searchResults.map(product => (
+                                                    <Link
+                                                        key={product.id}
+                                                        to={`/product/${product.id}`}
+                                                        className="block px-2 py-1 hover:bg-gray-100 rounded text-sm"
+                                                        onClick={() => {
+                                                            setIsSearchOpen(false);
+                                                            setSearchQuery('');
+                                                        }}
+                                                    >
+                                                        {product.id}
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        )}
+                                        {searchQuery && searchResults.length === 0 && (
+                                            <div className="mt-2 text-sm text-gray-500 px-2 py-1">
+                                                No products found
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -192,7 +319,12 @@ const MainNavbar = () => {
                     <div className="md:hidden flex justify-between items-center h-16">
                         {/* Hamburger Menu - Left */}
                         <div className="flex items-center">
-                            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                            <button
+                                onClick={() => {
+                                    setIsMobileMenuOpen(!isMobileMenuOpen);
+                                    setMobileSearchOpen(false);
+                                }}
+                            >
                                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                             </button>
                         </div>
@@ -211,17 +343,17 @@ const MainNavbar = () => {
                         {/* Search Icon - Right */}
                         <div className="flex items-center">
                             <button
-                                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                                onClick={toggleMobileSearch}
                                 className="text-gray-700 hover:text-black"
                             >
-                                <Search size={24} />
+                                {mobileSearchOpen ? <X size={24} /> : <Search size={24} />}
                             </button>
                         </div>
                     </div>
                 </div>
 
                 {/* Mobile menu */}
-                {isMobileMenuOpen && (
+                {isMobileMenuOpen && !mobileSearchOpen && (
                     <div className="md:hidden bg-white border-t border-gray-200 px-4 py-4 space-y-4">
                         <Link to="/" className="block font-semibold">Home</Link>
 
@@ -277,69 +409,52 @@ const MainNavbar = () => {
                                 </span>
                             )}
                         </button>
-
-                        <div>
-                            <button
-                                onClick={() => setIsSearchOpen(!isSearchOpen)}
-                                className="flex items-center space-x-2 text-gray-700"
-                            >
-                                <Search size={20} />
-                                <span>Search</span>
-                            </button>
-                            {isSearchOpen && (
-                                <div className="mt-2">
-                                    <input
-                                        type="text"
-                                        placeholder="Search..."
-                                        className="w-full px-3 py-1 border border-gray-300 rounded focus:outline-none"
-                                    />
-                                </div>
-                            )}
-                        </div>
                     </div>
                 )}
             </header>
 
             {/* Mobile Bottom Navigation */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-                <div className="flex justify-around items-center h-16">
-                    <Link to="/" className="flex flex-col items-center justify-center text-gray-700 hover:text-black p-2">
-                        <Home size={20} />
-                        <span className="text-xs mt-1">Home</span>
-                    </Link>
+            {!mobileSearchOpen && (
+                <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+                    <div className="flex justify-around items-center h-16">
+                        <Link to="/" className="flex flex-col items-center justify-center text-gray-700 hover:text-black p-2">
+                            <Home size={20} />
+                            <span className="text-xs mt-1">Home</span>
+                        </Link>
 
-                    <button
-                        onClick={openMobileMenu}
-                        className="flex flex-col items-center justify-center text-gray-700 hover:text-black p-2"
-                    >
-                        <List size={20} />
-                        <span className="text-xs mt-1">Category</span>
-                    </button>
+                        <button
+                            onClick={openMobileMenu}
+                            className="flex flex-col items-center justify-center text-gray-700 hover:text-black p-2"
+                        >
+                            <List size={20} />
+                            <span className="text-xs mt-1">Category</span>
+                        </button>
 
-                    <Link to="/cart" className="flex flex-col items-center justify-center text-gray-700 hover:text-black p-2">
-                        <Package size={20} />
-                        <span className="text-xs mt-1">Orders</span>
-                    </Link>
+                        <Link to="/cart" className="flex flex-col items-center justify-center text-gray-700 hover:text-black p-2">
+                            <Package size={20} />
+                            <span className="text-xs mt-1">Orders</span>
+                        </Link>
 
-                    <button
-                        onClick={() => setIsCartOpen(true)}
-                        className="flex flex-col items-center justify-center text-gray-700 hover:text-black p-2 relative"
-                    >
-                        <ShoppingCart size={20} />
-                        <span className="text-xs mt-1">Cart</span>
-                        {cartCount > 0 && (
-                            <span className="absolute top-0 right-2 bg-red-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                                {cartCount}
-                            </span>
-                        )}
-                    </button>
+                        <button
+                            onClick={() => setIsCartOpen(true)}
+                            className="flex flex-col items-center justify-center text-gray-700 hover:text-black p-2 relative"
+                        >
+                            <ShoppingCart size={20} />
+                            <span className="text-xs mt-1">Cart</span>
+                            {cartCount > 0 && (
+                                <span className="absolute top-0 right-2 bg-red-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </button>
 
-                    <a href="tel:+1234567890" className="flex flex-col items-center justify-center text-gray-700 hover:text-black p-2">
-                        <Phone size={20} />
-                        <span className="text-xs mt-1">Call</span>
-                    </a>
+                        <a href="tel:+1234567890" className="flex flex-col items-center justify-center text-gray-700 hover:text-black p-2">
+                            <Phone size={20} />
+                            <span className="text-xs mt-1">Call</span>
+                        </a>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Cart Sidebar */}
             <CartSidebar

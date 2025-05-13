@@ -767,7 +767,7 @@ const ProductDetails = () => {
                                 </div>
                             )}
 
-                            <div className="prose max-w-none text-gray-600 break-words whitespace-pre-wrap">
+                            <div className="prose max-w-none text-gray-600 break-words whitespace-pre-wrap px-2 md:px-4">
                                 {product.description || 'No description available.'}
                             </div>
 
@@ -810,7 +810,7 @@ const ProductDetails = () => {
 
                             {/* Reviews List */}
                             {reviews.length > 0 ? (
-                                <div className="space-y-6">
+                                <div className="space-y-6 px-2 md:px-4">
                                     {reviews.map((review) => (
                                         <div key={review.id} className="border-b pb-4">
                                             <div className="flex justify-between items-start">

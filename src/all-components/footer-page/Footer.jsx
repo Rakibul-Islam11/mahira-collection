@@ -13,26 +13,11 @@ import {
 } from 'lucide-react';
 import navbrandIMG from '../../assets/images/480353899_615347981104853_3842057109669510985_n (1).jpg';
 import { useState } from 'react';
+import bkashImg from '../../assets/images/BKash-bKash-Logo.wine.svg';
+import nagadImg from '../../assets/images/Nagad-Logo.wine.svg';
+import rocketImg from '../../assets/images/dutch-bangla-rocket-logo-png_seeklogo-317692.png';
 
 // Payment Icons as SVG Components
-const BkashIcon = () => (
-    <svg viewBox="0 0 24 24" className="w-6 h-6">
-        <path fill="#E2136E" d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm6.215 7.625h-1.557c-.117 0-.21.093-.21.21v8.33c0 .117.093.21.21.21h1.557c.117 0 .21-.093.21-.21v-8.33c0-.117-.093-.21-.21-.21zm-4.183 0h-1.556c-.117 0-.21.093-.21.21v8.33c0 .117.093.21.21.21h1.556c.117 0 .21-.093.21-.21v-8.33c0-.117-.093-.21-.21-.21zm-4.183 0H8.293c-.117 0-.21.093-.21.21v8.33c0 .117.093.21.21.21h1.556c.117 0 .21-.093.21-.21v-8.33c0-.117-.093-.21-.21-.21zm-4.182 0H4.11c-.117 0-.21.093-.21.21v8.33c0 .117.093.21.21.21h1.557c.117 0 .21-.093.21-.21v-8.33c0-.117-.093-.21-.21-.21z" />
-    </svg>
-);
-
-const NagadIcon = () => (
-    <svg viewBox="0 0 24 24" className="w-6 h-6">
-        <path fill="#E72D89" d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm6.5 14.5h-13v-5h13v5z" />
-    </svg>
-);
-
-const RocketIcon = () => (
-    <svg viewBox="0 0 24 24" className="w-6 h-6">
-        <path fill="#5D2D86" d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 22c-5.523 0-10-4.477-10-10S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm4-10a4 4 0 11-8 0 4 4 0 018 0z" />
-    </svg>
-);
-
 const VisaIcon = () => (
     <svg viewBox="0 0 24 24" className="w-6 h-6">
         <path fill="#1A1F71" d="M9.064 8.482l-1.09 6.966h1.527l1.09-6.966H9.064zm6.11 0l-1.09 6.966h1.527l1.09-6.966h-1.527zm-8.2 0L4.782 15.45h1.527l.69-4.414.017-.107.63-2.446H6.974zm12.052 0l-1.09 6.966h1.258l.77-4.92.042-.268.62-1.778h-1.58zm-5.137 0l-1.09 6.966h4.183l.26-1.656h-2.606l.4-2.57h2.547l.26-1.656h-2.547l.4-2.57h2.606l.26-1.656h-4.183z" />
@@ -76,12 +61,36 @@ const Footer = () => {
 
     // Payment methods data
     const paymentMethods = [
-        { name: 'bKash', icon: <BkashIcon />, color: 'bg-pink-100 text-pink-600' },
-        { name: 'Nagad', icon: <NagadIcon />, color: 'bg-purple-100 text-purple-600' },
-        { name: 'Rocket', icon: <RocketIcon />, color: 'bg-indigo-100 text-indigo-600' },
-        { name: 'Visa', icon: <VisaIcon />, color: 'bg-blue-100 text-blue-600' },
-        { name: 'Mastercard', icon: <MastercardIcon />, color: 'bg-red-100 text-red-600' },
-        { name: 'Cash on Delivery', icon: <CreditCard size={16} />, color: 'bg-green-100 text-green-600' }
+        {
+            name: 'bKash',
+            icon: <img src={bkashImg} alt="bKash" className="h-6 w-auto" />,
+            color: 'bg-pink-100'
+        },
+        {
+            name: 'Nagad',
+            icon: <img src={nagadImg} alt="Nagad" className="h-6 w-auto" />,
+            color: 'bg-purple-100'
+        },
+        {
+            name: 'Rocket',
+            icon: <img src={rocketImg} alt="Rocket" className="h-6 w-auto" />,
+            color: 'bg-indigo-100'
+        },
+        {
+            name: 'Visa',
+            icon: <VisaIcon />,
+            color: 'bg-blue-100'
+        },
+        {
+            name: 'Mastercard',
+            icon: <MastercardIcon />,
+            color: 'bg-red-100'
+        },
+        {
+            name: 'Cash on Delivery',
+            icon: <CreditCard size={16} className="text-gray-700" />,
+            color: 'bg-green-100'
+        }
     ];
 
     return (
@@ -248,9 +257,8 @@ const Footer = () => {
                                             key={index}
                                             className={`${method.color} p-2 rounded-md flex items-center justify-center`}
                                         >
-                                            <div className="flex items-center space-x-1">
+                                            <div className="flex items-center justify-center h-6">
                                                 {method.icon}
-                                                <span className="text-xs hidden sm:inline">{method.name}</span>
                                             </div>
                                         </div>
                                     ))}
@@ -296,9 +304,8 @@ const Footer = () => {
                                             className={`${method.color} p-2 rounded-md flex items-center justify-center`}
                                             title={method.name}
                                         >
-                                            <div className="flex items-center space-x-2">
+                                            <div className="flex items-center justify-center h-6">
                                                 {method.icon}
-                                                <span className="text-xs hidden lg:inline">{method.name}</span>
                                             </div>
                                         </div>
                                     ))}
