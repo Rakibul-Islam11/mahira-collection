@@ -5,8 +5,8 @@ import { collection, getDocs } from 'firebase/firestore';
 import { useState, useRef } from 'react';
 
 const AllProductsPage = () => {
-    const productsPerPage = 3;
-    const loadMoreCount = 2;
+    const productsPerPage = 10;
+    const loadMoreCount = 6;
     const [searchParams, setSearchParams] = useSearchParams();
     const currentPage = Number(searchParams.get('page')) || 1;
     const [loadingMore, setLoadingMore] = useState(false);
@@ -132,8 +132,8 @@ const AllProductsPage = () => {
 
     return (
         <div className='md:px-4 min-h-screen' ref={productsContainerRef}>
-            <h2 className="text-lg font-semibold mb-4 mt-2">
-                All Products/
+            <h2 className="text-lg font-semibold px-2 md:px-0 mb-2 md:mb-4 mt-2">
+                All Products /
             </h2>
 
             {displayedProducts.length === 0 ? (

@@ -372,7 +372,7 @@ const ProductDetails = () => {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 px-2">
                 {/* Product Images */}
                 <div className="md:sticky md:top-4">
                     {product.isColorVariants ? (
@@ -706,7 +706,7 @@ const ProductDetails = () => {
                         {/* Call Card */}
                         <a
                             href="tel:+8801407790565"
-                            className="flex-1 bg-white shadow-md rounded-lg p-4 text-center hover:shadow-lg cursor-pointer border border-gray-300"
+                            className="flex-1 bg-white shadow-md rounded-lg px-1 py-2 md:p-4 text-center hover:shadow-lg cursor-pointer border border-gray-300"
                         >
                             <div className="flex flex-col items-center gap-2">
                                 <div className="bg-gray-100 p-3 rounded-full">
@@ -722,7 +722,7 @@ const ProductDetails = () => {
                             href="https://wa.me/8801407790565"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-1 bg-white shadow-md rounded-lg p-4 text-center hover:shadow-lg cursor-pointer border border-gray-300"
+                            className="flex-1 bg-white shadow-md rounded-lg px-1 py-2 md:p-4 text-center hover:shadow-lg cursor-pointer border border-gray-300"
                         >
                             <div className="flex flex-col items-center gap-2">
                                 <div className="bg-green-100 p-3 rounded-full">
@@ -760,16 +760,17 @@ const ProductDetails = () => {
                     {activeTab === 'description' ? (
                         <div className="space-y-4">
                             {product.productType && (
-                                <div className="bg-blue-50 p-3 rounded-lg">
+                                <div className="bg-blue-50 p-3 rounded-lg flex flex-wrap">
                                     <p className="text-blue-800 font-medium">
                                         ({product.productType}) condition: {product.preOrderDescription}
                                     </p>
                                 </div>
                             )}
 
-                            <div className="prose max-w-none text-gray-600">
+                            <div className="prose max-w-none text-gray-600 break-words whitespace-pre-wrap">
                                 {product.description || 'No description available.'}
                             </div>
+
 
                             {product.detailsImage && (
                                 <div className="mt-4">

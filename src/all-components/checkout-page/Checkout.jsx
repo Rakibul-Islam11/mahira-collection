@@ -179,7 +179,7 @@ const Checkout = () => {
             }
         });
     };
-    console.log(formData);
+
     
     
     if (loadingProducts) {
@@ -217,46 +217,17 @@ const Checkout = () => {
                                 Customer Information
                             </h2>
 
-                            <form onSubmit={handleSubmit}>
-                                <div className="space-y-4 sm:space-y-5">
-                                    <div>
-                                        <label className="block text-sm sm:text-base font-medium text-gray-700 mb-2">
+                            <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
+                                <div className="space-y-5 md:space-y-6">
+                                    {/* Payment Method Section */}
+                                    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                                        <label className="block text-sm md:text-base font-medium text-gray-800 mb-3">
                                             Payment Method <span className="text-red-500">*</span>
                                         </label>
-                                        <div className="space-y-2">
+                                        <div className="space-y-3">
                                             {hasAnyProductWithType ? (
-                                                <div className="flex items-center">
-                                                    <input
-                                                        id="payment-bkash"
-                                                        name="paymentMethod"
-                                                        type="radio"
-                                                        value="bkash"
-                                                        checked={formData.paymentMethod === 'bkash'}
-                                                        onChange={handleChange}
-                                                        className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-                                                        required
-                                                    />
-                                                    <label htmlFor="payment-bkash" className="ml-2 block text-sm sm:text-base text-gray-700">
-                                                        bKash Payment (Required for selected products)
-                                                    </label>
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    <div className="flex items-center">
-                                                        <input
-                                                            id="payment-cash"
-                                                            name="paymentMethod"
-                                                            type="radio"
-                                                            value="cash"
-                                                            checked={formData.paymentMethod === 'cash'}
-                                                            onChange={handleChange}
-                                                            className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-                                                        />
-                                                        <label htmlFor="payment-cash" className="ml-2 block text-sm sm:text-base text-gray-700">
-                                                            Cash on Delivery
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex items-center">
+                                                <div className="flex items-start">
+                                                    <div className="flex items-center h-5 mt-0.5">
                                                         <input
                                                             id="payment-bkash"
                                                             name="paymentMethod"
@@ -265,138 +236,209 @@ const Checkout = () => {
                                                             checked={formData.paymentMethod === 'bkash'}
                                                             onChange={handleChange}
                                                             className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                            required
                                                         />
-                                                        <label htmlFor="payment-bkash" className="ml-2 block text-sm sm:text-base text-gray-700">
-                                                            bKash Payment
+                                                    </div>
+                                                    <label htmlFor="payment-bkash" className="ml-3 block text-sm md:text-base text-gray-700">
+                                                        <span className="font-medium">bKash Payment</span>
+                                                        <p className="text-gray-500 text-xs md:text-sm mt-1">Required for selected products</p>
+                                                    </label>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="flex items-start">
+                                                        <div className="flex items-center h-5 mt-0.5">
+                                                            <input
+                                                                id="payment-cash"
+                                                                name="paymentMethod"
+                                                                type="radio"
+                                                                value="cash"
+                                                                checked={formData.paymentMethod === 'cash'}
+                                                                onChange={handleChange}
+                                                                className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                            />
+                                                        </div>
+                                                        <label htmlFor="payment-cash" className="ml-3 block text-sm md:text-base text-gray-700">
+                                                            <span className="font-medium">Cash on Delivery</span>
+                                                            <p className="text-gray-500 text-xs md:text-sm mt-1">Pay when you receive your order</p>
+                                                        </label>
+                                                    </div>
+                                                    <div className="flex items-start">
+                                                        <div className="flex items-center h-5 mt-0.5">
+                                                            <input
+                                                                id="payment-bkash"
+                                                                name="paymentMethod"
+                                                                type="radio"
+                                                                value="bkash"
+                                                                checked={formData.paymentMethod === 'bkash'}
+                                                                onChange={handleChange}
+                                                                className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                            />
+                                                        </div>
+                                                        <label htmlFor="payment-bkash" className="ml-3 block text-sm md:text-base text-gray-700">
+                                                            <span className="font-medium">bKash Payment</span>
+                                                            <p className="text-gray-500 text-xs md:text-sm mt-1">Faster order processing</p>
                                                         </label>
                                                     </div>
                                                 </>
                                             )}
                                         </div>
                                         {hasAnyProductWithType && (
-                                            <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md text-sm text-yellow-700">
-                                                এখানে শুধু মাত্র pre-order product এর জন্য আপনাকে অবশ্যই পূর্বে পেমেন্ট করতে হবে। আর cart এ যদি non pre-order product থাকে তাহলে বাকি product গুলির জন্য cash on delivery দিতে চাইলে অনুগ্রহ করে product name গুলি order note এ mention করুন।
-                                            </div>
-                                        )}
-                                        {hasAnyProductWithType && (
-                                            <div className="mt-2 text-sm text-gray-500">
-                                                Note: Some products in your cart require bKash payment.
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label htmlFor="name" className="block text-sm sm:text-base font-medium text-gray-700">
-                                            Full Name <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="name"
-                                            name="name"
-                                            value={formData.name}
-                                            onChange={handleChange}
-                                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm sm:text-base ${errors.name ? 'border-red-500' : 'border'}`}
-                                        />
-                                        {errors.name && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                                            <>
+                                                <div className="mt-4 p-3 bg-amber-50 border border-amber-100 rounded-md text-sm text-amber-800">
+                                                    <p className="font-medium">Important Notice:</p>
+                                                    <p className="mt-1">এখানে শুধু মাত্র pre-order product এর জন্য আপনাকে অবশ্যই পূর্বে পেমেন্ট করতে হবে। আর cart এ যদি non pre-order product থাকে তাহলে বাকি product গুলির জন্য cash on delivery দিতে চাইলে অনুগ্রহ করে product name গুলি order note এ mention করুন।</p>
+                                                </div>
+                                                <div className="mt-2 text-xs md:text-sm text-gray-600">
+                                                    Note: Some products in your cart require bKash payment.
+                                                </div>
+                                            </>
                                         )}
                                     </div>
 
-                                    <div>
-                                        <label htmlFor="phone" className="block text-sm sm:text-base font-medium text-gray-700">
-                                            Phone Number <span className="text-red-500">*</span>
-                                        </label>
-                                        <div className="mt-1 relative rounded-md shadow-sm">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span className="text-gray-500 sm:text-sm">+88</span>
-                                            </div>
-                                            <input
-                                                type="tel"
-                                                id="phone"
-                                                name="phone"
-                                                value={formData.phone}
-                                                onChange={handleChange}
-                                                placeholder="01XXXXXXXXX"
-                                                className={`block w-full pl-12 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm sm:text-base ${errors.phone ? 'border-red-500' : 'border'}`}
-                                            />
-                                        </div>
-                                        {errors.phone && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label htmlFor="address" className="block text-sm sm:text-base font-medium text-gray-700">
-                                            Delivery Address <span className="text-red-500">*</span>
-                                        </label>
-                                        <textarea
-                                            id="address"
-                                            name="address"
-                                            rows={3}
-                                            value={formData.address}
-                                            onChange={handleChange}
-                                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm sm:text-base ${errors.address ? 'border-red-500' : 'border'}`}
-                                            placeholder="House #, Road #, Area, District"
-                                        />
-                                        {errors.address && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.address}</p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label htmlFor="notes" className="block text-sm sm:text-base font-medium text-gray-700">
-                                            Order Notes (Optional)
-                                        </label>
-                                        <textarea
-                                            id="notes"
-                                            name="notes"
-                                            rows={2}
-                                            value={formData.notes}
-                                            onChange={handleChange}
-                                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm sm:text-base ${errors.notes ? 'border-red-500' : 'border'}`}
-                                            placeholder="Any special instructions for your order..."
-                                        />
-                                        <div className="flex justify-between mt-1">
-                                            {errors.notes && (
-                                                <p className="text-sm text-red-600">{errors.notes}</p>
-                                            )}
-                                            <p className={`text-xs ${formData.notes.length > 100 ? 'text-red-600' : 'text-gray-500'} ml-auto`}>
-                                                {formData.notes.length}/100 characters
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start">
-                                        <div className="flex items-center h-5">
-                                            <input
-                                                id="agreeTerms"
-                                                name="agreeTerms"
-                                                type="checkbox"
-                                                checked={formData.agreeTerms}
-                                                onChange={handleChange}
-                                                className={`h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 ${errors.agreeTerms ? 'border-red-500' : 'border'}`}
-                                            />
-                                        </div>
-                                        <div className="ml-3 text-sm">
-                                            <label htmlFor="agreeTerms" className="font-medium text-gray-700">
-                                                I agree to the <a href="/terms" className="text-blue-600 hover:text-blue-500">Terms and Conditions</a> <span className="text-red-500">*</span>
+                                    {/* Personal Information Section */}
+                                    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 space-y-5 md:space-y-6">
+                                        {/* Name Field */}
+                                        <div>
+                                            <label htmlFor="name" className="block text-sm md:text-base font-medium text-gray-800">
+                                                Full Name <span className="text-red-500">*</span>
                                             </label>
-                                            {errors.agreeTerms && (
-                                                <p className="mt-1 text-red-600">{errors.agreeTerms}</p>
+                                            <div className="mt-1 relative">
+                                                <input
+                                                    type="text"
+                                                    id="name"
+                                                    name="name"
+                                                    value={formData.name}
+                                                    onChange={handleChange}
+                                                    className={`block w-full rounded-md py-2 px-3 border ${errors.name ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'} shadow-sm text-sm md:text-base`}
+                                                    placeholder="Your full name"
+                                                />
+                                                {errors.name && (
+                                                    <p className="mt-1 text-xs md:text-sm text-red-600">{errors.name}</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Phone Field with English-only input */}
+                                        <div>
+                                            <label htmlFor="phone" className="block text-sm md:text-base font-medium text-gray-800">
+                                                Phone Number <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="mt-1 relative rounded-md shadow-sm">
+                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <span className="text-gray-500 text-sm md:text-base">+88</span>
+                                                </div>
+                                                <input
+                                                    type="tel"
+                                                    id="phone"
+                                                    name="phone"
+                                                    value={formData.phone}
+                                                    onChange={(e) => {
+                                                        // Allow only English numerals (0-9)
+                                                        const englishNumbers = e.target.value.replace(/[^0-9]/g, '');
+                                                        handleChange({
+                                                            target: {
+                                                                name: 'phone',
+                                                                value: englishNumbers
+                                                            }
+                                                        });
+                                                    }}
+                                                    maxLength={11}
+                                                    placeholder="01XXXXXXXXX"
+                                                    className={`block w-full pl-12 rounded-md py-2 px-3 border ${errors.phone ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'} shadow-sm text-sm md:text-base`}
+                                                    pattern="[0-9]*"
+                                                    inputMode="numeric"
+                                                />
+                                            </div>
+                                            {errors.phone && (
+                                                <p className="mt-1 text-xs md:text-sm text-red-600">{errors.phone}</p>
                                             )}
+                                            <p className="mt-1 text-xs text-gray-500">Must be 11 digits (e.g. 01712345678) with only english</p>
+                                        </div>
+
+                                        {/* Address Field */}
+                                        <div>
+                                            <label htmlFor="address" className="block text-sm md:text-base font-medium text-gray-800">
+                                                Delivery Address <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="mt-1">
+                                                <textarea
+                                                    id="address"
+                                                    name="address"
+                                                    rows={3}
+                                                    value={formData.address}
+                                                    onChange={handleChange}
+                                                    className={`block w-full rounded-md py-2 px-3 border ${errors.address ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'} shadow-sm text-sm md:text-base`}
+                                                    placeholder="House #, Road #, Area, District"
+                                                />
+                                                {errors.address && (
+                                                    <p className="mt-1 text-xs md:text-sm text-red-600">{errors.address}</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Order Notes */}
+                                        <div>
+                                            <label htmlFor="notes" className="block text-sm md:text-base font-medium text-gray-800">
+                                                Order Notes (Optional)
+                                            </label>
+                                            <div className="mt-1">
+                                                <textarea
+                                                    id="notes"
+                                                    name="notes"
+                                                    rows={2}
+                                                    value={formData.notes}
+                                                    onChange={handleChange}
+                                                    className={`block w-full rounded-md py-2 px-3 border ${errors.notes ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'} shadow-sm text-sm md:text-base`}
+                                                    placeholder="Any special instructions for your order..."
+                                                    maxLength={100}
+                                                />
+                                                <div className="flex justify-between mt-1">
+                                                    {errors.notes && (
+                                                        <p className="text-xs md:text-sm text-red-600">{errors.notes}</p>
+                                                    )}
+                                                    <p className={`text-xs ${formData.notes.length > 100 ? 'text-red-600' : 'text-gray-500'} ml-auto`}>
+                                                        {formData.notes.length}/100 characters
+                                                    </p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="pt-2">
-                                        <button
-                                            type="submit"
-                                            className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm sm:text-base font-medium text-white bg-green-600 hover:bg-green-700"
-                                        >
-                                            Place Order
-                                        </button>
-                                        {errors.submit && (
-                                            <p className="mt-2 text-sm text-red-600 text-center">{errors.submit}</p>
-                                        )}
+                                    {/* Terms and Submit Section */}
+                                    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                                        <div className="flex items-start">
+                                            <div className="flex items-center h-5">
+                                                <input
+                                                    id="agreeTerms"
+                                                    name="agreeTerms"
+                                                    type="checkbox"
+                                                    checked={formData.agreeTerms}
+                                                    onChange={handleChange}
+                                                    className={`h-4 w-4 rounded ${errors.agreeTerms ? 'border-red-300 text-red-600 focus:ring-red-500' : 'border-gray-300 text-blue-600 focus:ring-blue-500'} focus:ring-2`}
+                                                />
+                                            </div>
+                                            <div className="ml-3">
+                                                <label htmlFor="agreeTerms" className="text-sm md:text-base font-medium text-gray-800">
+                                                    I agree to the <a href="/terms" className="text-blue-600 hover:text-blue-800 underline">Terms and Conditions</a> <span className="text-red-500">*</span>
+                                                </label>
+                                                {errors.agreeTerms && (
+                                                    <p className="mt-1 text-xs md:text-sm text-red-600">{errors.agreeTerms}</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-6">
+                                            <button
+                                                type="submit"
+                                                className="w-full flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-sm md:text-base font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+                                            >
+                                                Place Order
+                                            </button>
+                                            {errors.submit && (
+                                                <p className="mt-3 text-sm text-red-600 text-center">{errors.submit}</p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </form>

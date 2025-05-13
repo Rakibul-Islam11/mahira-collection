@@ -7,7 +7,7 @@ import './category-product.css';
 
 const CategoryProducts = () => {
     const { gender, category } = useParams();
-    const productsPerPage = 2;
+    const productsPerPage = 10;
     const productsContainerRef = useRef(null);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -141,7 +141,7 @@ const CategoryProducts = () => {
 
     return (
         <div className='min-h-screen md:px-4' ref={productsContainerRef}>
-            <h2 className="text-lg font-semibold mb-4 mt-2">
+            <h2 className="text-lg font-semibold px-2 md:px-2 mb-2 md:m-4 mt-2">
                 Showing products for {gender} / {category}
             </h2>
 

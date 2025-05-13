@@ -7,7 +7,7 @@ const Home = () => {
             <div>
                 <Hero></Hero>
             </div>
-            <div className="px-4">
+            <div className="px-1 md:px-4">
                 <div>
                     <AllProductsPage></AllProductsPage>
                 </div>

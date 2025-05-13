@@ -389,40 +389,77 @@ const CompleteOrder = () => {
 
                         {/* Payment details */}
                         {orderData.paymentMethod === 'bkash' && (
-                            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                                <div className="px-6 py-4 border-b border-gray-200">
-                                    <h2 className="text-lg font-bold text-gray-900">
-                                        bKash পেমেন্ট ডিটেইলস
+                            <div className="bg-white rounded-lg shadow-md border border-red-100 overflow-hidden">
+                                <div className="px-6 py-4 bg-red-50 border-b border-red-200">
+                                    <h2 className="text-lg font-bold text-red-800 flex items-center">
+                                        <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                        </svg>
+                                        bKash পেমেন্ট ডিটেইলস (অত্যন্ত গুরুত্বপূর্ণ)
                                     </h2>
+                                    <p className="mt-1 text-sm text-red-700">সাবধানতার সাথে সঠিক তথ্য প্রদান করুন</p>
                                 </div>
+
                                 <div className="px-6 py-4">
-                                    <div className="space-y-4">
+                                    <div className="space-y-5">
+                                        {/* bKash Number Field */}
                                         <div>
-                                            <label htmlFor="bkashNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                                                bKash নম্বর <span className="text-red-500">*</span>
+                                            <label htmlFor="bkashNumber" className="block text-sm font-medium text-gray-900 mb-1">
+                                                আপনার bKash নাম্বার <span className="text-red-500">*</span>
                                             </label>
                                             <div className="relative rounded-md shadow-sm">
                                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                    <span className="text-gray-500">+88</span>
+                                                    <span className="text-gray-700 font-medium">+88</span>
                                                 </div>
                                                 <input
                                                     type="tel"
                                                     id="bkashNumber"
                                                     name="bkashNumber"
                                                     value={paymentDetails.bkashNumber}
-                                                    onChange={handlePaymentChange}
+                                                    onChange={(e) => {
+                                                        // Allow only English numerals (0-9)
+                                                        const englishNumbers = e.target.value.replace(/[^0-9]/g, '');
+                                                        handlePaymentChange({
+                                                            target: {
+                                                                name: 'bkashNumber',
+                                                                value: englishNumbers
+                                                            }
+                                                        });
+                                                    }}
+                                                    maxLength={11}
                                                     placeholder="01XXXXXXXXX"
-                                                    className={`block w-full pl-12 py-2 rounded-md border ${paymentErrors.bkashNumber ? 'border-red-500' : 'border-gray-300'} focus:ring-blue-500 focus:border-blue-500`}
+                                                    className={`block w-full pl-12 py-2.5 rounded-md border-2 ${paymentErrors.bkashNumber ? 'border-red-500 bg-red-50' : 'border-gray-300'} focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium`}
+                                                    pattern="[0-9]*"
+                                                    inputMode="numeric"
+                                                    onBlur={() => {
+                                                        // Validate on blur
+                                                        if (paymentDetails.bkashNumber && !/^01[3-9]\d{8}$/.test(paymentDetails.bkashNumber)) {
+                                                            setPaymentErrors({
+                                                                ...paymentErrors,
+                                                                bkashNumber: "সঠিক ১১ ডিজিটের bKash নম্বর দিন (01XXXXXXXXX)"
+                                                            });
+                                                        }
+                                                    }}
                                                 />
                                             </div>
-                                            {paymentErrors.bkashNumber && (
-                                                <p className="mt-1 text-sm text-red-600">{paymentErrors.bkashNumber}</p>
+                                            {paymentErrors.bkashNumber ? (
+                                                <p className="mt-1 text-sm text-red-600 flex items-center">
+                                                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                    </svg>
+                                                    {paymentErrors.bkashNumber}
+                                                </p>
+                                            ) : (
+                                                <p className="mt-1 text-xs text-gray-500">
+                                                    অবশ্যই 11 ডিজিটের সঠিক bKash নম্বর দিন (যেমন: 01712345678)
+                                                </p>
                                             )}
                                         </div>
 
+                                        {/* Transaction ID Field */}
                                         <div>
-                                            <label htmlFor="transactionId" className="block text-sm font-medium text-gray-700 mb-1">
-                                                ট্রানজেকশন আইডি <span className="text-red-500">*</span>
+                                            <label htmlFor="transactionId" className="block text-sm font-medium text-gray-900 mb-1">
+                                                ট্রানজেকশন আইডি (TrxID) <span className="text-red-500">*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -430,18 +467,60 @@ const CompleteOrder = () => {
                                                 name="transactionId"
                                                 value={paymentDetails.transactionId}
                                                 onChange={handlePaymentChange}
-                                                className={`block w-full py-2 rounded-md border ${paymentErrors.transactionId ? 'border-red-500' : 'border-gray-300'} focus:ring-blue-500 focus:border-blue-500`}
-                                                placeholder="ট্রানজেকশন আইডি লিখুন"
+                                                className={`block w-full py-2.5 px-3 rounded-md border-2 ${paymentErrors.transactionId ? 'border-red-500 bg-red-50' : 'border-gray-300'} focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium`}
+                                                placeholder="ট্রানজেকশন আইডি লিখুন (যেমন: 8A7D6F5G4H)"
+                                                onBlur={() => {
+                                                    if (!paymentDetails.transactionId) {
+                                                        setPaymentErrors({
+                                                            ...paymentErrors,
+                                                            transactionId: "ট্রানজেকশন আইডি দিন"
+                                                        });
+                                                    }
+                                                }}
                                             />
                                             {paymentErrors.transactionId && (
-                                                <p className="mt-1 text-sm text-red-600">{paymentErrors.transactionId}</p>
+                                                <p className="mt-1 text-sm text-red-600 flex items-center">
+                                                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                    </svg>
+                                                    {paymentErrors.transactionId}
+                                                </p>
                                             )}
                                         </div>
 
-                                        <div className="bg-blue-50 p-3 rounded-md text-sm text-blue-700">
-                                            <p><strong>পেমেন্ট নির্দেশাবলী:</strong></p>
-                                            <p className="mt-1">1. bKash নম্বর: <strong>017XXXXXXXX</strong> এ ৳{formatPrice(orderData.total)} পাঠান</p>
-                                            <p className="mt-1">2. উপরে আপনার bKash নম্বর এবং ট্রানজেকশন আইডি লিখুন</p>
+                                        {/* Payment Instructions */}
+                                        <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
+                                            <h3 className="text-sm font-bold text-blue-800 mb-2 flex items-center">
+                                                <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                                </svg>
+                                                পেমেন্ট নির্দেশাবলী:
+                                            </h3>
+                                            <ol className="text-sm text-blue-700 space-y-2">
+                                                <li className="flex">
+                                                    <span className="font-bold mr-2">1.</span>
+                                                    <span>bKash নম্বর: <strong className="text-blue-900">01783694568</strong> এ ৳{formatPrice(orderData.total)} পাঠান</span>
+                                                </li>
+                                                <li className="flex">
+                                                    <span className="font-bold mr-2">2.</span>
+                                                    <span>উপরে আপনার bKash নম্বর এবং সঠিক ট্রানজেকশন আইডি লিখুন</span>
+                                                </li>
+                                                <li className="flex">
+                                                    <span className="font-bold mr-2">3.</span>
+                                                    <span className="text-red-600 font-semibold">ভুল তথ্য দিলে আপনার পেমেন্ট গ্রহণ করা হবে না</span>
+                                                </li>
+                                            </ol>
+                                        </div>
+
+                                        {/* Verification Warning */}
+                                        <div className="bg-yellow-50 p-3 rounded-md border border-yellow-200 text-sm text-yellow-800">
+                                            <p className="font-bold flex items-center">
+                                                <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                </svg>
+                                                গুরুত্বপূর্ণ নোট:
+                                            </p>
+                                            <p className="mt-1">আপনার পেমেন্ট যাচাই করার জন্য আমরা আপনার প্রদত্ত নম্বরে কল করতে পারি। অনুগ্রহ করে সঠিক তথ্য প্রদান করুন।</p>
                                         </div>
                                     </div>
                                 </div>
