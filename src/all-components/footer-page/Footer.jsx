@@ -9,43 +9,65 @@ import {
     Clock
 } from 'lucide-react';
 import navbrandIMG from '../../assets/images/480353899_615347981104853_3842057109669510985_n (1).jpg';
+import { useState } from 'react';
 
 const Footer = () => {
     const currentYear = new Date().getFullYear();
+    const fullText = `
+        Mahira Collection একটি অনলাইন ফ্যাশন শপ যেখানে মেয়েদের ও ছেলেদের জন্য আধুনিক এবং ট্রেন্ডি পোশাক ও অ্যাক্সেসরিজ পাওয়া যায়।
+        আমাদের সংগ্রহে রয়েছে পার্টি, ক্যাজুয়াল ও ট্র্যাডিশনাল সব ধরনের পোশাক।
+        মেয়েদের জন্য রয়েছে দোপাট্টা, কুর্তি, শাড়ি, হিজাব, ব্যাগ ও গহনার দারুণ কালেকশন।
+        ছেলেদের জন্য রয়েছে পাঞ্জাবি, শার্ট, টি-শার্ট, ঘড়ি, চশমা ও জুতা।
+        Mahira Collection সব বয়সের জন্য মানসম্মত পণ্যের নিশ্চয়তা দেয়।
+        আমরা নতুন ট্রেন্ড ও সিজন অনুযায়ী কালেকশন আপডেট করি।
+        দেশজুড়ে দ্রুত এবং নির্ভরযোগ্য ডেলিভারি সার্ভিস রয়েছে।
+        আমাদের ওয়েবসাইট ব্যবহার করা সহজ এবং মোবাইল ফ্রেন্ডলি।
+        বিশেষ ছাড় ও অফারের মাধ্যমে আমরা কাস্টমারদের জন্য শপিং আরও উপভোগ্য করে তুলি।
+        Mahira Collection মানে স্টাইল, আরাম ও গুণগত মানের নিশ্চয়তা।
+    `;
+    const [isReadMore, setIsReadMore] = useState(false);
+    const visibleText = isReadMore ? fullText : fullText.split('\n').slice(0, 4).join('\n');
+
+    const toggleReadMore = () => {
+        setIsReadMore(!isReadMore);
+    };
 
     return (
         <footer className="bg-gray-100 mt-20 text-gray-700 play-regular w-full border-t border-gray-200">
-           
             {/* Main Footer Content */}
             <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-                <div className=' flex flex-row items-center justify-between gap-8'>
+                <div className='flex flex-col md:flex-row items-center justify-between gap-8 mb-10 border-b border-gray-200 pb-8'>
                     {/* Brand Logo */}
-                    <div className="w-full   flex justify-start border-b border-gray-200">
+                    <div className="w-full md:w-auto flex justify-center md:justify-start">
                         <Link to="/" className="flex justify-center">
                             <img
                                 src={navbrandIMG}
                                 alt="Brand Logo"
-                                className=" h-24 md:h-40 object-cover"
+                                className="h-20 md:h-32 object-cover"
                             />
                         </Link>
                     </div>
-                    <div>
-                        <p>Mahira Collection
-                            Mahira Collection একটি অনলাইন ফ্যাশন শপ যেখানে মেয়েদের ও ছেলেদের জন্য আধুনিক এবং ট্রেন্ডি পোশাক ও অ্যাক্সেসরিজ পাওয়া যায়।
-                            আমাদের সংগ্রহে রয়েছে পার্টি, ক্যাজুয়াল ও ট্র্যাডিশনাল সব ধরনের পোশাক।
-                            মেয়েদের জন্য রয়েছে দোপাট্টা, কুর্তি, শাড়ি, হিজাব, ব্যাগ ও গহনার দারুণ কালেকশন।
-                            ছেলেদের জন্য রয়েছে পাঞ্জাবি, শার্ট, টি-শার্ট, ঘড়ি, চশমা ও জুতা।
-                            Mahira Collection সব বয়সের জন্য মানসম্মত পণ্যের নিশ্চয়তা দেয়।
-                            আমরা নতুন ট্রেন্ড ও সিজন অনুযায়ী কালেকশন আপডেট করি।
-                            দেশজুড়ে দ্রুত এবং নির্ভরযোগ্য ডেলিভারি সার্ভিস রয়েছে।
-                            আমাদের ওয়েবসাইট ব্যবহার করা সহজ এবং মোবাইল ফ্রেন্ডলি।
-                            বিশেষ ছাড় ও অফারের মাধ্যমে আমরা কাস্টমারদের জন্য শপিং আরও উপভোগ্য করে তুলি।
-                            Mahira Collection মানে স্টাইল, আরাম ও গুণগত মানের নিশ্চয়তা।</p>
+                    {/* Company Description */}
+                    <div className="text-sm md:text-base">
+                        <p>
+                            {visibleText}
+                            {!isReadMore && fullText.split('\n').length > 4 && (
+                                <button onClick={toggleReadMore} className="text-blue-500 hover:underline focus:outline-none">
+                                    Read More
+                                </button>
+                            )}
+                            {isReadMore && fullText.split('\n').length > 4 && (
+                                <button onClick={toggleReadMore} className="text-blue-500 hover:underline focus:outline-none">
+                                    Read Less
+                                </button>
+                            )}
+                        </p>
                     </div>
                 </div>
-                
-                <div className="max-w-7xl mx-auto pt-10">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+
+                <div className="max-w-7xl mx-auto pt-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                        {/* About Us */}
                         <div>
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">About Us</h3>
                             <p className="text-sm leading-relaxed mb-4">
@@ -132,20 +154,20 @@ const Footer = () => {
                     </div>
 
                     {/* Newsletter Section */}
-                    <div className="mt-4 pt-2 border-t border-gray-200">
-                        <div className="text-center max-w-lg mx-auto">
-                            <h3 className="text-lg font-semibold text-gray-900 mt-1 mb-2">
+                    <div className="mt-8 pt-4 border-t border-gray-200">
+                        <div className="text-center max-w-md mx-auto">
+                            <h3 className="text-lg font-semibold text-gray-900 mt-1 mb-4">
                                 Subscribe to Our Newsletter
                             </h3>
                             <form className="flex flex-col sm:flex-row items-center justify-center gap-3">
                                 <input
                                     type="email"
                                     placeholder="Your email address"
-                                    className="w-full sm:w-auto flex-grow px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    className="w-full sm:w-auto flex-grow px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
                                 />
                                 <button
                                     type="submit"
-                                    className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                    className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
                                 >
                                     Subscribe
                                 </button>
@@ -154,8 +176,8 @@ const Footer = () => {
                     </div>
 
                     {/* Copyright */}
-                    <div className="mt-2 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
-                        <p>&copy; {currentYear} Your Company Name. All rights reserved.</p>
+                    <div className="mt-6 pt-4 border-t border-gray-200 text-center text-xs text-gray-500">
+                        <p>&copy; {currentYear} Mahira Collection. All rights reserved.</p>
                     </div>
                 </div>
             </div>

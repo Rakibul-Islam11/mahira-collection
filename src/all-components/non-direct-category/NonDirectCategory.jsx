@@ -142,7 +142,7 @@ const NonDirectCategory = () => {
     }
 
     return (
-        <div className='min-h-screen p-4' ref={productsContainerRef}>
+        <div className='min-h-screen md:px-4' ref={productsContainerRef}>
             <h2 className="text-lg font-semibold mb-4 mt-2">
                 {gender}'s Collection
             </h2>

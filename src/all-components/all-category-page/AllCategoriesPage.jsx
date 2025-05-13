@@ -131,7 +131,7 @@ const AllProductsPage = () => {
     }
 
     return (
-        <div className='px-4 min-h-screen' ref={productsContainerRef}>
+        <div className='md:px-4 min-h-screen' ref={productsContainerRef}>
             <h2 className="text-lg font-semibold mb-4 mt-2">
                 All Products/
             </h2>

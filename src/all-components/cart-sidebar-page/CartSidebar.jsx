@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { ShoppingCart, X, Minus, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const CartSidebar = ({ isOpen, onClose, cartItems }) => {
-    const [localCartItems, setLocalCartItems] = useState(cartItems);
+const CartSidebar = ({ isOpen, onClose, cartItems: propCartItems }) => {
+    const [localCartItems, setLocalCartItems] = useState(propCartItems);
 
     useEffect(() => {
-        setLocalCartItems(cartItems);
-    }, [cartItems]);
+        setLocalCartItems(propCartItems);
+    }, [propCartItems]);
 
     const formatPrice = (price) => {
         const num = typeof price === 'string' ? parseFloat(price) : price;
@@ -27,7 +27,7 @@ const CartSidebar = ({ isOpen, onClose, cartItems }) => {
         setLocalCartItems(updatedCart);
         localStorage.setItem('cart', JSON.stringify(updatedCart));
         window.dispatchEvent(new Event('storage'));
-        window.dispatchEvent(new Event('cartUpdated'));
+        window.dispatchEvent(new CustomEvent('cartUpdated', { detail: updatedCart })); // Dispatch a custom event with the updated cart
     };
 
     const updateQuantity = (id, change) => {
@@ -40,7 +40,7 @@ const CartSidebar = ({ isOpen, onClose, cartItems }) => {
         });
         setLocalCartItems(updatedCart);
         localStorage.setItem('cart', JSON.stringify(updatedCart));
-        window.dispatchEvent(new Event('cartUpdated'));
+        window.dispatchEvent(new CustomEvent('cartUpdated', { detail: updatedCart })); // Dispatch a custom event with the updated cart
     };
 
     return (

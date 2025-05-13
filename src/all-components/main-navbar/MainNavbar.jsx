@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ShoppingCart, Menu, X, Search, Home, List, Phone } from 'lucide-react';
+import { ShoppingCart, Menu, X, Search, Home, List, Phone, Package } from 'lucide-react';
 import navbrandIMG from '../../assets/images/Untitled design (1).png';
 import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -63,6 +63,10 @@ const MainNavbar = () => {
 
     const toggleDropdown = (menu) => {
         setOpenDropdown(prev => prev === menu ? null : menu);
+    };
+
+    const openMobileMenu = () => {
+        setIsMobileMenuOpen(true);
     };
 
     if (loading) {
@@ -256,7 +260,7 @@ const MainNavbar = () => {
                             )
                         ))}
 
-                        <Link to="/orders" className="block font-semibold">Orders</Link>
+                        <Link to="/cart" className="block font-semibold">Orders</Link>
 
                         <button
                             onClick={() => {
@@ -304,9 +308,17 @@ const MainNavbar = () => {
                         <span className="text-xs mt-1">Home</span>
                     </Link>
 
-                    <Link to="/all-categories" className="flex flex-col items-center justify-center text-gray-700 hover:text-black p-2">
+                    <button
+                        onClick={openMobileMenu}
+                        className="flex flex-col items-center justify-center text-gray-700 hover:text-black p-2"
+                    >
                         <List size={20} />
                         <span className="text-xs mt-1">Category</span>
+                    </button>
+
+                    <Link to="/cart" className="flex flex-col items-center justify-center text-gray-700 hover:text-black p-2">
+                        <Package size={20} />
+                        <span className="text-xs mt-1">Orders</span>
                     </Link>
 
                     <button

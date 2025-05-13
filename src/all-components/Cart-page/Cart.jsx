@@ -52,6 +52,23 @@ const Cart = () => {
         };
 
         fetchCartItems();
+
+        const handleCartUpdate = (event) => {
+            if (event.detail) {
+                setCartItems(event.detail);
+            } else {
+                // Fallback to localStorage if event.detail is not available
+                const updatedCartFromStorage = JSON.parse(localStorage.getItem('cart')) || [];
+                setCartItems(updatedCartFromStorage);
+            }
+            fetchShippingCharges(); // Re-calculate shipping charges on cart update
+        };
+
+        window.addEventListener('cartUpdated', handleCartUpdate);
+
+        return () => {
+            window.removeEventListener('cartUpdated', handleCartUpdate);
+        };
     }, []);
 
     const fetchShippingCharges = async () => {
