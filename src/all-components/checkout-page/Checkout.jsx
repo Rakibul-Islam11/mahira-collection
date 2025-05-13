@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { db } from '../../../firbase.config';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 
 const Checkout = () => {
     const location = useLocation();
@@ -12,18 +12,16 @@ const Checkout = () => {
         address: '',
         notes: '',
         agreeTerms: false,
-        paymentMethod: 'cash' // Default to cash on delivery
+        paymentMethod: 'cash'
     });
     const [errors, setErrors] = useState({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [orderSuccess, setOrderSuccess] = useState(false);
-    const [orderId, setOrderId] = useState('');
     const [hasAnyProductWithType, setHasAnyProductWithType] = useState(false);
     const [loadingProducts, setLoadingProducts] = useState(true);
 
-    // Try to get state from location first, then from localStorage
+    // Get checkout state with proper fallback
     const getCheckoutState = () => {
         if (location.state) {
+            localStorage.setItem('checkoutState', JSON.stringify(location.state));
             return location.state;
         }
 
@@ -41,7 +39,12 @@ const Checkout = () => {
 
     const { cartItems, shipping, coupon } = getCheckoutState();
 
-    // Check if any product in cart has productType field
+    useEffect(() => {
+        if (cartItems.length === 0) {
+            navigate('/cart');
+        }
+    }, [cartItems, navigate]);
+
     useEffect(() => {
         const checkProductTypes = async () => {
             try {
@@ -60,7 +63,6 @@ const Checkout = () => {
                 });
 
                 setHasAnyProductWithType(foundAnyProductWithType);
-                // Set default payment method based on product types
                 setFormData(prev => ({
                     ...prev,
                     paymentMethod: foundAnyProductWithType ? 'bkash' : 'cash'
@@ -143,115 +145,43 @@ const Checkout = () => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
 
         if (!validateForm()) {
             return;
         }
 
-        setIsSubmitting(true);
+        // Prepare order data
+        const orderData = {
+            customer: {
+                name: formData.name,
+                phone: formData.phone,
+                address: formData.address,
+                notes: formData.notes
+            },
+            items: cartItems,
+            shipping: shipping,
+            coupon: coupon,
+            subtotal: calculateSubtotal(),
+            total: calculateTotal(),
+            paymentMethod: formData.paymentMethod,
+            status: 'pending',
+            createdAt: new Date().toISOString()
+        };
 
-        try {
-            const orderData = {
-                customer: {
-                    name: formData.name,
-                    phone: formData.phone,
-                    address: formData.address,
-                    notes: formData.notes
-                },
-                items: cartItems,
-                shipping: shipping,
-                coupon: coupon,
-                subtotal: calculateSubtotal(),
-                total: calculateTotal(),
-                paymentMethod: formData.paymentMethod,
-                status: 'pending',
-                createdAt: new Date().toISOString()
-            };
-
-            const docRef = await addDoc(collection(db, 'orders'), orderData);
-            setOrderId(docRef.id);
-            setOrderSuccess(true);
-
-            localStorage.removeItem('cart');
-            localStorage.removeItem('checkoutState');
-            window.dispatchEvent(new Event('storage'));
-
-        } catch (error) {
-            console.error('Error submitting order:', error);
-            setErrors({
-                ...errors,
-                submit: 'Failed to place order. Please try again.'
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
+        // Navigate to CompleteOrder with all data
+        navigate('/complete-order', {
+            state: {
+                orderData,
+                hasAnyProductWithType
+                
+            }
+        });
     };
-
-    if (orderSuccess) {
-        return (
-            <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-3xl mx-auto">
-                    <div className="text-center bg-white p-6 sm:p-8 rounded-lg shadow-sm">
-                        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-                            <svg
-                                className="h-6 w-6 text-green-600"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M5 13l4 4L19 7"
-                                />
-                            </svg>
-                        </div>
-                        <h2 className="mt-3 text-lg sm:text-xl font-medium text-gray-900">Order Placed Successfully!</h2>
-                        <p className="mt-2 text-sm sm:text-base text-gray-600">
-                            Your order ID is: <span className="font-medium">{orderId}</span>
-                        </p>
-                        <p className="mt-2 text-sm sm:text-base text-gray-600">
-                            We've sent a confirmation to your phone number.
-                        </p>
-                        <div className="mt-6">
-                            <button
-                                onClick={() => navigate('/')}
-                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
-                            >
-                                Continue Shopping
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    if (cartItems.length === 0) {
-        return (
-            <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-3xl mx-auto text-center">
-                    <h2 className="text-lg sm:text-xl font-medium text-gray-900">No Order Data Found</h2>
-                    <p className="mt-2 text-sm sm:text-base text-gray-600">
-                        Please add items to your cart before proceeding to checkout.
-                    </p>
-                    <div className="mt-4">
-                        <button
-                            onClick={() => navigate('/')}
-                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
-                        >
-                            Continue Shopping
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
+    console.log(formData);
+    
+    
     if (loadingProducts) {
         return (
             <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
@@ -289,7 +219,6 @@ const Checkout = () => {
 
                             <form onSubmit={handleSubmit}>
                                 <div className="space-y-4 sm:space-y-5">
-                                    {/* Payment Method Radio Buttons */}
                                     <div>
                                         <label className="block text-sm sm:text-base font-medium text-gray-700 mb-2">
                                             Payment Method <span className="text-red-500">*</span>
@@ -344,7 +273,6 @@ const Checkout = () => {
                                                 </>
                                             )}
                                         </div>
-                                        {/* Show special notice only when bkash is mandatory */}
                                         {hasAnyProductWithType && (
                                             <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md text-sm text-yellow-700">
                                                 এখানে শুধু মাত্র pre-order product এর জন্য আপনাকে অবশ্যই পূর্বে পেমেন্ট করতে হবে। আর cart এ যদি non pre-order product থাকে তাহলে বাকি product গুলির জন্য cash on delivery দিতে চাইলে অনুগ্রহ করে product name গুলি order note এ mention করুন।
@@ -357,7 +285,6 @@ const Checkout = () => {
                                         )}
                                     </div>
 
-                                    {/* Rest of the form fields remain the same */}
                                     <div>
                                         <label htmlFor="name" className="block text-sm sm:text-base font-medium text-gray-700">
                                             Full Name <span className="text-red-500">*</span>
@@ -463,20 +390,9 @@ const Checkout = () => {
                                     <div className="pt-2">
                                         <button
                                             type="submit"
-                                            disabled={isSubmitting}
-                                            className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm sm:text-base font-medium text-white bg-green-600 hover:bg-green-700 disabled:bg-green-400"
+                                            className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm sm:text-base font-medium text-white bg-green-600 hover:bg-green-700"
                                         >
-                                            {isSubmitting ? (
-                                                <>
-                                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                    </svg>
-                                                    Processing...
-                                                </>
-                                            ) : (
-                                                'Place Order'
-                                            )}
+                                            Place Order
                                         </button>
                                         {errors.submit && (
                                             <p className="mt-2 text-sm text-red-600 text-center">{errors.submit}</p>
@@ -487,7 +403,6 @@ const Checkout = () => {
                         </div>
                     </div>
 
-                    {/* Order Summary Section (remains the same) */}
                     <div className="mt-4 sm:mt-6 lg:mt-0 lg:col-span-5 xl:col-span-4">
                         <div className="bg-white shadow-sm rounded-lg p-4 sm:p-5 md:p-6">
                             <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-5">Order Summary</h2>

@@ -12,7 +12,7 @@ function App() {
 
   return (
     <>
-      <div className='w-[100%] xl:w-[80%] mx-auto  bg-gray-100 shadow-xl mb-16'>
+      <div className='w-[100%] xl:w-[80%] mx-auto  bg-gray-100 shadow-xl mb-16 md:mb-0'>
         <QueryClientProvider client={queryClient}>
           <TopNav></TopNav>
           <ResMarque></ResMarque>

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-
+import { Link, useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firbase.config';
 
@@ -12,9 +11,9 @@ const Cart = () => {
     const [discount, setDiscount] = useState(0);
     const [couponMessage, setCouponMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
-    const [productsData, setProductsData] = useState({}); // প্রোডাক্ট ডেটা স্টোর করার জন্য স্টেট
+    const [productsData, setProductsData] = useState({});
+    const navigate = useNavigate();
 
-    // Format number with commas and remove decimal part
     const formatPrice = (price) => {
         const num = typeof price === 'string' ? parseFloat(price) : price;
         return Math.floor(num).toLocaleString('en-US');
@@ -26,13 +25,11 @@ const Cart = () => {
             const validatedCart = cart.map(item => ({
                 ...item,
                 price: typeof item.price === 'string' ? parseFloat(item.price) : item.price,
-                // Set default deliveryCharge to true if not exists
                 deliveryCharge: typeof item.deliveryCharge === 'undefined' ? true : item.deliveryCharge
             }));
 
             setCartItems(validatedCart);
 
-            // Fetch product data from Firestore for each item in cart
             const productsInfo = {};
             for (const item of validatedCart) {
                 try {
@@ -57,11 +54,10 @@ const Cart = () => {
             if (event.detail) {
                 setCartItems(event.detail);
             } else {
-                // Fallback to localStorage if event.detail is not available
                 const updatedCartFromStorage = JSON.parse(localStorage.getItem('cart')) || [];
                 setCartItems(updatedCartFromStorage);
             }
-            fetchShippingCharges(); // Re-calculate shipping charges on cart update
+            fetchShippingCharges();
         };
 
         window.addEventListener('cartUpdated', handleCartUpdate);
@@ -76,16 +72,13 @@ const Cart = () => {
             await new Promise(resolve => setTimeout(resolve, 500));
             const mockData = { coxbazar: 50, outOfCoxbazar: 100 };
 
-            // Check if any item in cart has deliveryCharge true or undefined (which we set to true)
             const hasDeliveryCharge = cartItems.some(item => {
                 const productData = productsData[item.productId];
-                // Firestore ডাটাবেসে deliveryCharge থাকলে সেটা ব্যবহার করবে, নাহলে আইটেমের deliveryCharge ব্যবহার করবে
                 return (productData?.deliveryCharge === true ||
                     (typeof productData?.deliveryCharge === 'undefined' &&
                         (item.deliveryCharge === true || typeof item.deliveryCharge === 'undefined')));
             });
 
-            // Only apply shipping charge if at least one item requires delivery charge
             const charge = hasDeliveryCharge
                 ? (shippingLocation === 'inside' ? mockData.coxbazar : mockData.outOfCoxbazar)
                 : 0;
@@ -173,6 +166,29 @@ const Cart = () => {
         }
     };
 
+    const handleProceedToCheckout = () => {
+        const checkoutData = {
+            cartItems: cartItems.map(item => ({
+                ...item,
+                price: typeof item.price === 'string' ? parseFloat(item.price) : item.price
+            })),
+            shipping: {
+                location: shippingLocation,
+                charge: shippingCharge
+            },
+            coupon: {
+                code: couponCode,
+                discount: discount
+            }
+        };
+
+        // Save to localStorage as backup
+        localStorage.setItem('checkoutState', JSON.stringify(checkoutData));
+
+        // Navigate with state
+        navigate('/checkout', { state: checkoutData });
+    };
+
     if (isLoading && cartItems.length === 0) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -181,7 +197,6 @@ const Cart = () => {
         );
     }
 
-    // Check if any item requires shipping charge (true or undefined)
     const hasDeliveryChargeItems = cartItems.some(item => {
         const productData = productsData[item.productId];
         return (productData?.deliveryCharge === true ||
@@ -189,7 +204,6 @@ const Cart = () => {
                 (item.deliveryCharge === true || typeof item.deliveryCharge === 'undefined')));
     });
 
-    // Get list of products with free shipping (explicitly false)
     const freeShippingProducts = cartItems.filter(item => {
         const productData = productsData[item.productId];
         return productData?.deliveryCharge === false || item.deliveryCharge === false;
@@ -480,28 +494,12 @@ const Cart = () => {
                                     </div>
 
                                     <div className="mt-3 sm:mt-4">
-                                            <Link
-                                                to={{
-                                                    pathname: "/checkout",
-                                                    state: {
-                                                        cartItems: cartItems.map(item => ({
-                                                            ...item,
-                                                            price: typeof item.price === 'string' ? parseFloat(item.price) : item.price
-                                                        })),
-                                                        shipping: {
-                                                            location: shippingLocation,
-                                                            charge: shippingCharge
-                                                        },
-                                                        coupon: {
-                                                            code: couponCode,
-                                                            discount: discount
-                                                        }
-                                                    }
-                                                }}
-                                                className="w-full flex justify-center items-center px-3 sm:px-4 py-1.5 sm:py-2 md:py-3 border border-transparent rounded-md shadow-sm text-xs sm:text-sm md:text-base font-medium text-white bg-green-600 hover:bg-green-700"
-                                            >
-                                                Proceed to Checkout
-                                            </Link>
+                                        <button
+                                            onClick={handleProceedToCheckout}
+                                            className="w-full flex justify-center items-center px-3 sm:px-4 py-1.5 sm:py-2 md:py-3 border border-transparent rounded-md shadow-sm text-xs sm:text-sm md:text-base font-medium text-white bg-green-600 hover:bg-green-700"
+                                        >
+                                            Proceed to Checkout
+                                        </button>
                                     </div>
 
                                     <div className="mt-2 sm:mt-3 flex justify-center text-xs sm:text-sm text-center text-gray-500">

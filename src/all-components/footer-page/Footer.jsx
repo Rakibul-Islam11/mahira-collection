@@ -38,12 +38,12 @@ const Footer = () => {
             <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
                 <div className='flex flex-col md:flex-row items-center justify-between gap-8 mb-10 border-b border-gray-200 pb-8'>
                     {/* Brand Logo */}
-                    <div className="w-full md:w-auto flex justify-center md:justify-start">
+                    <div className="w-full md:w-auto flex justify-center items-start md:justify-start">
                         <Link to="/" className="flex justify-center">
                             <img
                                 src={navbrandIMG}
                                 alt="Brand Logo"
-                                className="h-20 md:h-32 object-cover"
+                                className=""
                             />
                         </Link>
                     </div>

@@ -17,7 +17,8 @@ import MenuCategoryForm from './all-components/up/MenuCategoryForm.jsx'
 import Cart from './all-components/Cart-page/Cart.jsx'
 import Footer from './all-components/footer-page/Footer.jsx'
 import Checkout from './all-components/checkout-page/Checkout.jsx'
-import OrderComplete from './all-components/OrderComplete-page/OrderComplete.jsx'
+import CompleteOrder from './all-components/OrderComplete-page/CompleteOrder.jsx'
+
 
 const router = createBrowserRouter([
   {
@@ -74,9 +75,13 @@ const router = createBrowserRouter([
         path: '/checkout',
         element: <Checkout></Checkout>
       },
+      // {
+      //   path: '/order-complete',
+      //   element: <OrderComplete></OrderComplete>
+      // },
       {
-        path: '/order-complete',
-        element: <OrderComplete></OrderComplete>
+        path: '/complete-order',
+        element: <CompleteOrder></CompleteOrder>
       },
       {
         path: '/footer',

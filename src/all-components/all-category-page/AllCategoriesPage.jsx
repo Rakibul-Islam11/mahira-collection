@@ -140,7 +140,7 @@ const AllProductsPage = () => {
                 <p className="text-center py-8">No products found.</p>
             ) : (
                 <>
-                    <ul className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3">
+                    <ul className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-2">
                         {displayedProducts.map((product) => {
                             const hasDiscount = product.discount && product.discount > 0;
                             const hasColorVariants = product.colorVariants && product.colorVariants.length > 0;
