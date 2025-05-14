@@ -3,6 +3,8 @@ import { db } from '../../../firbase.config';
 import { useEffect, useRef, useState } from 'react';
 import { collection, query, where, getDocs, limit, startAfter } from 'firebase/firestore';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './category-product.css';
 
 const CategoryProducts = () => {
@@ -42,7 +44,6 @@ const CategoryProducts = () => {
                 limit(productsPerPage)
             );
 
-
         const querySnapshot = await getDocs(q);
         const fetchedProducts = [];
 
@@ -74,6 +75,19 @@ const CategoryProducts = () => {
         keepPreviousData: true
     });
 
+    const showToast = (productName) => {
+        toast.success(`${productName} added to cart!`, {
+            position: "bottom-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+        });
+    };
+
     const addToCart = (product) => {
         const cart = JSON.parse(localStorage.getItem('cart')) || [];
         const existingItem = cart.find(item => item.id === product.id);
@@ -96,6 +110,7 @@ const CategoryProducts = () => {
         localStorage.setItem('cart', JSON.stringify(cart));
         window.dispatchEvent(new Event('storage'));
         window.dispatchEvent(new CustomEvent('cartUpdated'));
+        showToast(product.name);
     };
 
     const handleAddToCartOrRedirect = (product) => {
@@ -141,6 +156,19 @@ const CategoryProducts = () => {
 
     return (
         <div className='min-h-screen md:px-4' ref={productsContainerRef}>
+            <ToastContainer
+                position="bottom-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
+
             <h2 className="text-lg font-semibold px-2 md:px-2 mb-2 md:m-4 mt-2">
                 Showing products for {gender} / {category}
             </h2>

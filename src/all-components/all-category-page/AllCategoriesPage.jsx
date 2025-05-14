@@ -3,6 +3,8 @@ import { db } from '../../../firbase.config';
 import { useQuery } from '@tanstack/react-query';
 import { collection, getDocs } from 'firebase/firestore';
 import { useState, useRef } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AllProductsPage = () => {
     const productsPerPage = 10;
@@ -74,6 +76,18 @@ const AllProductsPage = () => {
         // Dispatch events to update cart count
         window.dispatchEvent(new Event('storage'));
         window.dispatchEvent(new CustomEvent('cartUpdated'));
+
+        // Show success toast
+        toast.success(`${product.name} added to cart!`, {
+            position: "bottom-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+        });
     };
 
     const handleAddToCartOrRedirect = (product) => {
@@ -131,7 +145,21 @@ const AllProductsPage = () => {
     }
 
     return (
-        <div className='md:px-4 min-h-screen' ref={productsContainerRef}>
+        <div className='md:px-4 min-h-screen w-[100%]' ref={productsContainerRef}>
+            {/* Toast Container */}
+            <ToastContainer
+                position="bottom-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
+
             <h2 className="text-lg font-semibold px-2 md:px-0 mb-2 md:mb-4 mt-2">
                 All Products /
             </h2>
@@ -213,7 +241,7 @@ const AllProductsPage = () => {
                                         </div>
                                     </div>
 
-                                    <div className="px-2 pb-2 border-t border-gray-100  space-y-2">
+                                    <div className="px-1 pb-2 border-t border-gray-100  space-y-2">
                                         <div className="flex flex-col md:flex-row gap-1 md:gap-2 mb-[1px]">
                                             <button
                                                 onClick={() => handleAddToCartOrRedirect(product)}

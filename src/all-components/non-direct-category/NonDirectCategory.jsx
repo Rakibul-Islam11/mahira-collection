@@ -3,6 +3,8 @@ import { db } from '../../../firbase.config';
 import { useEffect, useState, useRef } from 'react';
 import { collection, query, where, getDocs, limit, startAfter } from 'firebase/firestore';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const NonDirectCategory = () => {
     const { gender } = useParams();
@@ -82,6 +84,16 @@ const NonDirectCategory = () => {
 
         if (existingItem) {
             existingItem.quantity += 1;
+            toast.success(`${product.name} quantity increased in cart!`, {
+                position: "bottom-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
         } else {
             cart.push({
                 id: product.id,
@@ -92,6 +104,16 @@ const NonDirectCategory = () => {
                     : Math.round(product.price),
                 image: product.mainImage || product.images?.[0],
                 quantity: 1
+            });
+            toast.success(`${product.name} added to cart!`, {
+                position: "bottom-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
             });
         }
 
@@ -142,7 +164,21 @@ const NonDirectCategory = () => {
     }
 
     return (
-        <div className='min-h-screen md:px-4' ref={productsContainerRef}>
+        <div className='min-h-screen md:px-4 w-[100%]' ref={productsContainerRef}>
+            {/* Toast Container */}
+            <ToastContainer
+                position="bottom-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
+
             <h2 className="text-lg font-semibold px-2 md:px-0 mb-2 md:mb-4 mt-2">
                 {gender}'s Collection
             </h2>
@@ -239,8 +275,8 @@ const NonDirectCategory = () => {
                                         </div>
                                     </div>
 
-                                    <div className="px-2 pb-2 border-t border-gray-100 space-y-2">
-                                        <div className="flex flex-col md:flex-row gap-1 md:gap-2 mb-[1px]">
+                                    <div className="px-1 pb-2 border-t border-gray-100 space-y-2">
+                                        <div className="flex flex-col md:flex-row gap-1 md:gap-1 mb-[1px]">
                                             <button
                                                 onClick={() => handleAddToCartOrRedirect(product)}
                                                 className="w-full border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-0.5 md:py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
