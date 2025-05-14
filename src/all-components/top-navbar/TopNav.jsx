@@ -44,7 +44,7 @@ const TopNav = () => {
                 </Marquee>
             </div>
             <div className="flex flex-row gap-2 md:gap-3 shrink-0 text-[20px] md:text-[24px]"> {/* Increased font size for icons */}
-                <a href=""><FaFacebookSquare /></a>
+                <a href="https://www.facebook.com/Homaira22"><FaFacebookSquare /></a>
                 <a href=""><IoLogoYoutube /></a>
                 <a href=""><FaInstagram /></a>
             </div>

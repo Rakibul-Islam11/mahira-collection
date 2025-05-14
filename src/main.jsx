@@ -21,6 +21,7 @@ import CompleteOrder from './all-components/OrderComplete-page/CompleteOrder.jsx
 import ProductUpdate from './all-components/admin-panel-page/ProductUpdate.jsx'
 import AdminLayout from './all-components/admin-panel-page/AdminLayout.jsx'
 import HeadlineUpdate from './all-components/admin-panel-page/HeadlineUpdate.jsx'
+import OrderCart from './all-components/admin-panel-page/OrderCart.jsx'
 
 
 
@@ -110,6 +111,9 @@ const router = createBrowserRouter([
           { path: 'product-category', element: <MenuCategoryForm /> },
           { path: 'headline-update', element: <HeadlineUpdate></HeadlineUpdate> },
           { path: 'banner-update', element: <div>Banner Update Page</div> },
+          {
+            path: 'order-cart', element: <OrderCart></OrderCart>
+          }
         ],
       },
     ]

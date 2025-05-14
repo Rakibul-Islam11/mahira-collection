@@ -24,7 +24,8 @@ const OrderComplete = () => {
             // Use contactNumber as document ID
             await setDoc(doc(db, 'orders', contactNumber), {
                 ...orderData,
-                status: 'confirmed' // Changing status to confirmed when actually stored
+                status: 'confirmed', // Changing status to confirmed when actually stored
+                orderStatus: false // Adding the boolean field as requested
             });
 
             // Redirect to home page after successful storage

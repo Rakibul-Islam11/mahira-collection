@@ -187,6 +187,7 @@ const CompleteOrder = () => {
 
             const orderToSave = {
                 ...orderData,
+                orderStatus: false,
                 orderId: orderId,
                 status: 'confirmed',
                 confirmedAt: new Date().toISOString(),

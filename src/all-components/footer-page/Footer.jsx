@@ -274,7 +274,7 @@ const Footer = () => {
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Follow Us</h3>
                             <div className="flex space-x-4">
                                 <a
-                                    href="#"
+                                    href="https://www.facebook.com/Homaira22"
                                     className="bg-white p-2 rounded-full shadow-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                                     aria-label="Facebook"
                                 >
@@ -356,13 +356,13 @@ const Footer = () => {
                                 <div className="flex items-center space-x-3">
                                     <Phone size={18} />
                                     <a href="tel:+8801736600480" className="hover:text-blue-600">
-                                        +880 1736 600480
+                                        +880 01783694568
                                     </a>
                                 </div>
                                 <div className="flex items-center space-x-3">
                                     <Phone size={18} />
                                     <a href="tel:+8801736600480" className="hover:text-blue-600">
-                                        +880 1736 600480
+                                        +880 01783694568
                                     </a>
                                 </div>
                             </div>
