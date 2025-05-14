@@ -302,7 +302,7 @@ const Up = () => {
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-6">Upload Product to Firestore</h1>
+            <h1 className="text-2xl font-bold mb-6">Upload Product</h1>
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Collection and Document Name */}

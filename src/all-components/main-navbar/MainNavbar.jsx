@@ -222,7 +222,7 @@ const MainNavbar = () => {
                                 <img
                                     src={navbrandIMG}
                                     alt="Brand Logo"
-                                    className="h-[130px] w-auto"
+                                    className="h-[80px] w-auto"
                                 />
                             </Link>
                         </div>
@@ -335,7 +335,7 @@ const MainNavbar = () => {
                                 <img
                                     src={navbrandIMG}
                                     alt="Brand Logo"
-                                    className="h-[120px] w-auto"
+                                    className="h-[70px] w-auto"
                                 />
                             </Link>
                         </div>

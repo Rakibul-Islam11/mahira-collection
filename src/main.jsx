@@ -18,6 +18,11 @@ import Cart from './all-components/Cart-page/Cart.jsx'
 import Footer from './all-components/footer-page/Footer.jsx'
 import Checkout from './all-components/checkout-page/Checkout.jsx'
 import CompleteOrder from './all-components/OrderComplete-page/CompleteOrder.jsx'
+import ProductUpdate from './all-components/admin-panel-page/ProductUpdate.jsx'
+import AdminLayout from './all-components/admin-panel-page/AdminLayout.jsx'
+import HeadlineUpdate from './all-components/admin-panel-page/HeadlineUpdate.jsx'
+
+
 
 
 const router = createBrowserRouter([
@@ -59,14 +64,14 @@ const router = createBrowserRouter([
         path: '/admin',
         element: <Admin></Admin>
       },
-      {
-        path: '/up-products',
-        element: <Up></Up>
-      },
-      {
-        path: '/up-categories',
-        element: <MenuCategoryForm></MenuCategoryForm>
-      },
+      // {
+      //   path: '/admin/upload-products',
+      //   element: <Up></Up>
+      // },
+      // {
+      //   path: '/admin/product-category',
+      //   element: <MenuCategoryForm></MenuCategoryForm>
+      // },
       {
         path: '/cart',
         element: <Cart></Cart>
@@ -86,7 +91,27 @@ const router = createBrowserRouter([
       {
         path: '/footer',
         element : <Footer></Footer>
-      }
+      },
+      // {
+      //   path: '/admin/product-update',
+      //   element: <ProductUpdate></ProductUpdate>
+      // },
+      // {
+      //   path: '/admin-panel',
+      //   element: <AdminNavbar></AdminNavbar>
+      // },
+      {
+        path: '/admin-panel',
+        element: <AdminLayout />, // 👈 Admin layout
+        children: [
+          { index: true, element: <ProductUpdate /> }, // Default route
+          { path: 'product-update', element: <ProductUpdate /> },
+          { path: 'upload-products', element: <Up /> },
+          { path: 'product-category', element: <MenuCategoryForm /> },
+          { path: 'headline-update', element: <HeadlineUpdate></HeadlineUpdate> },
+          { path: 'banner-update', element: <div>Banner Update Page</div> },
+        ],
+      },
     ]
     
   }
