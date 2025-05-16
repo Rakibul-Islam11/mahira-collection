@@ -64,59 +64,59 @@ const Footer = () => {
         {
             name: 'bKash',
             icon: <img src={bkashImg} alt="bKash" className="h-6 w-auto" />,
-            color: 'bg-pink-100'
+            color: 'bg-gradient-to-r from-pink-500 to-pink-600'
         },
         {
             name: 'Nagad',
             icon: <img src={nagadImg} alt="Nagad" className="h-6 w-auto" />,
-            color: 'bg-purple-100'
+            color: 'bg-gradient-to-r from-purple-500 to-purple-600'
         },
         {
             name: 'Rocket',
             icon: <img src={rocketImg} alt="Rocket" className="h-6 w-auto" />,
-            color: 'bg-indigo-100'
+            color: 'bg-gradient-to-r from-indigo-500 to-indigo-600'
         },
         {
             name: 'Visa',
             icon: <VisaIcon />,
-            color: 'bg-blue-100'
+            color: 'bg-gradient-to-r from-blue-500 to-blue-600'
         },
         {
             name: 'Mastercard',
             icon: <MastercardIcon />,
-            color: 'bg-red-100'
+            color: 'bg-gradient-to-r from-red-500 to-red-600'
         },
         {
             name: 'Cash on Delivery',
-            icon: <CreditCard size={16} className="text-gray-700" />,
-            color: 'bg-green-100'
+            icon: <CreditCard size={16} className="text-white" />,
+            color: 'bg-gradient-to-r from-green-500 to-green-600'
         }
     ];
 
     return (
-        <footer className="bg-gray-50 text-gray-700 play-regular w-full border-t border-gray-200">
+        <footer className="bg-gradient-to-b mt-4 from-gray-900 to-gray-800 text-gray-300 play-regular w-full border-t border-gray-700">
             {/* Main Footer Content */}
-            <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
                 {/* Brand and Description - Desktop */}
-                <div className='hidden md:flex flex-col md:flex-row items-center justify-between gap-8 mb-10 border-b border-gray-200 pb-8'>
+                <div className='hidden md:flex flex-col md:flex-row items-center justify-between gap-8 mb-12 border-b border-gray-700 pb-10'>
                     {/* Brand Logo */}
                     <div className="w-full md:w-auto flex justify-center items-start md:justify-start">
-                        <Link to="/" className="flex justify-center">
+                        <Link to="/" className="flex justify-center group">
                             <img
                                 src={navbrandIMG}
                                 alt="Mahira Collection Logo"
-                                className="h-24 object-contain"
+                                className="h-28 object-contain transform group-hover:scale-105 transition-transform duration-300"
                             />
                         </Link>
                     </div>
                     {/* Company Description */}
                     <div className="text-sm md:text-base text-center md:text-left">
-                        <p className="whitespace-pre-line">
+                        <p className="whitespace-pre-line leading-relaxed">
                             {visibleText}
                             {!isReadMore && fullText.split('\n').length > 4 && (
                                 <button
                                     onClick={toggleReadMore}
-                                    className="text-blue-600 hover:text-blue-800 font-medium ml-2 focus:outline-none flex items-center"
+                                    className="text-pink-400 hover:text-pink-300 font-medium ml-2 focus:outline-none flex items-center transition-colors"
                                 >
                                     Read More <ChevronDown size={16} className="ml-1" />
                                 </button>
@@ -124,7 +124,7 @@ const Footer = () => {
                             {isReadMore && fullText.split('\n').length > 4 && (
                                 <button
                                     onClick={toggleReadMore}
-                                    className="text-blue-600 hover:text-blue-800 font-medium ml-2 focus:outline-none flex items-center"
+                                    className="text-pink-400 hover:text-pink-300 font-medium ml-2 focus:outline-none flex items-center transition-colors"
                                 >
                                     Read Less <ChevronUp size={16} className="ml-1" />
                                 </button>
@@ -134,16 +134,16 @@ const Footer = () => {
                 </div>
 
                 {/* Brand and Description - Mobile */}
-                <div className='md:hidden mb-6 border-b border-gray-200 pb-6'>
+                <div className='md:hidden mb-8 border-b border-gray-700 pb-8'>
                     <div className="flex flex-col items-center">
-                        <Link to="/" className="mb-4">
+                        <Link to="/" className="mb-6 group">
                             <img
                                 src={navbrandIMG}
                                 alt="Mahira Collection Logo"
-                                className="h-20 object-contain"
+                                className="h-24 object-contain transform group-hover:scale-105 transition-transform duration-300"
                             />
                         </Link>
-                        <p className="text-sm text-center whitespace-pre-line">
+                        <p className="text-sm text-center whitespace-pre-line leading-relaxed">
                             {fullText.split('\n').slice(0, 4).join('\n')}
                         </p>
                     </div>
@@ -151,18 +151,18 @@ const Footer = () => {
 
                 <div className="max-w-7xl mx-auto">
                     {/* Mobile Accordion */}
-                    <div className="md:hidden space-y-4 mb-6">
+                    <div className="md:hidden space-y-6 mb-8">
                         {/* Quick Links */}
-                        <div className="border-b border-gray-200 pb-2">
+                        <div className="border-b border-gray-700 pb-3">
                             <button
                                 onClick={() => toggleSection('quickLinks')}
-                                className="flex justify-between items-center w-full text-lg font-semibold text-gray-900"
+                                className="flex justify-between items-center w-full text-lg font-semibold text-white"
                             >
                                 Quick Links
-                                {openSection === 'quickLinks' ? <ChevronUp /> : <ChevronDown />}
+                                {openSection === 'quickLinks' ? <ChevronUp className="text-pink-400" /> : <ChevronDown className="text-pink-400" />}
                             </button>
                             {openSection === 'quickLinks' && (
-                                <ul className="mt-3 space-y-2 text-sm pl-2">
+                                <ul className="mt-4 space-y-3 text-sm pl-2">
                                     {[
                                         { name: 'Home', path: '/' },
                                         { name: 'About Us', path: '/about' },
@@ -173,7 +173,7 @@ const Footer = () => {
                                         <li key={index}>
                                             <Link
                                                 to={link.path}
-                                                className="hover:text-blue-600 transition-colors block py-1"
+                                                className="hover:text-pink-400 transition-colors duration-200 block py-1.5"
                                             >
                                                 {link.name}
                                             </Link>
@@ -184,30 +184,30 @@ const Footer = () => {
                         </div>
 
                         {/* Contact Info */}
-                        <div className="border-b border-gray-200 pb-2">
+                        <div className="border-b border-gray-700 pb-3">
                             <button
                                 onClick={() => toggleSection('contact')}
-                                className="flex justify-between items-center w-full text-lg font-semibold text-gray-900"
+                                className="flex justify-between items-center w-full text-lg font-semibold text-white"
                             >
                                 Contact Us
-                                {openSection === 'contact' ? <ChevronUp /> : <ChevronDown />}
+                                {openSection === 'contact' ? <ChevronUp className="text-pink-400" /> : <ChevronDown className="text-pink-400" />}
                             </button>
                             {openSection === 'contact' && (
-                                <div className="mt-3 space-y-3 text-sm pl-2">
+                                <div className="mt-4 space-y-4 text-sm pl-2">
                                     <div className="flex items-start space-x-3">
-                                        <MapPin size={18} className="mt-0.5 flex-shrink-0" />
-                                        <span>123 Street Name, City, Country</span>
+                                        <MapPin size={18} className="mt-0.5 flex-shrink-0 text-pink-400" />
+                                        <span>123 Street Name, Cox's Bazar, Bangladesh</span>
                                     </div>
                                     <div className="flex items-center space-x-3">
-                                        <Mail size={18} />
-                                        <a href="mailto:info@example.com" className="hover:text-blue-600">
-                                            info@example.com
+                                        <Mail size={18} className="text-pink-400" />
+                                        <a href="mailto:info@mahira.com" className="hover:text-pink-400 transition-colors duration-200">
+                                            info@mahira.com
                                         </a>
                                     </div>
                                     <div className="flex items-center space-x-3">
-                                        <Phone size={18} />
-                                        <a href="tel:+1234567890" className="hover:text-blue-600">
-                                            +1 234 567 890
+                                        <Phone size={18} className="text-pink-400" />
+                                        <a href="tel:+8801736600480" className="hover:text-pink-400 transition-colors duration-200">
+                                            +880 01783694568
                                         </a>
                                     </div>
                                 </div>
@@ -215,26 +215,26 @@ const Footer = () => {
                         </div>
 
                         {/* Opening Hours */}
-                        <div className="border-b border-gray-200 pb-2">
+                        <div className="border-b border-gray-700 pb-3">
                             <button
                                 onClick={() => toggleSection('hours')}
-                                className="flex justify-between items-center w-full text-lg font-semibold text-gray-900"
+                                className="flex justify-between items-center w-full text-lg font-semibold text-white"
                             >
                                 Opening Hours
-                                {openSection === 'hours' ? <ChevronUp /> : <ChevronDown />}
+                                {openSection === 'hours' ? <ChevronUp className="text-pink-400" /> : <ChevronDown className="text-pink-400" />}
                             </button>
                             {openSection === 'hours' && (
-                                <div className="mt-3 space-y-2 text-sm pl-2">
+                                <div className="mt-4 space-y-3 text-sm pl-2">
                                     <div className="flex items-center space-x-3">
-                                        <Clock size={18} />
+                                        <Clock size={18} className="text-pink-400" />
                                         <span>Mon - Fri: 9am - 8pm</span>
                                     </div>
                                     <div className="flex items-center space-x-3">
-                                        <Clock size={18} />
+                                        <Clock size={18} className="text-pink-400" />
                                         <span>Saturday: 10am - 6pm</span>
                                     </div>
                                     <div className="flex items-center space-x-3">
-                                        <Clock size={18} />
+                                        <Clock size={18} className="text-pink-400" />
                                         <span>Sunday: Closed</span>
                                     </div>
                                 </div>
@@ -242,20 +242,21 @@ const Footer = () => {
                         </div>
 
                         {/* Payment Methods - Mobile */}
-                        <div className="border-b border-gray-200 pb-2">
+                        <div className="border-b border-gray-700 pb-3">
                             <button
                                 onClick={() => toggleSection('payments')}
-                                className="flex justify-between items-center w-full text-lg font-semibold text-gray-900"
+                                className="flex justify-between items-center w-full text-lg font-semibold text-white"
                             >
                                 Payment Methods
-                                {openSection === 'payments' ? <ChevronUp /> : <ChevronDown />}
+                                {openSection === 'payments' ? <ChevronUp className="text-pink-400" /> : <ChevronDown className="text-pink-400" />}
                             </button>
                             {openSection === 'payments' && (
-                                <div className="mt-3 grid grid-cols-3 gap-2 pl-2">
+                                <div className="mt-4 grid grid-cols-3 gap-3 pl-2">
                                     {paymentMethods.map((method, index) => (
                                         <div
                                             key={index}
-                                            className={`${method.color} p-2 rounded-md flex items-center justify-center`}
+                                            className={`${method.color} p-2 rounded-md flex items-center justify-center shadow-md hover:shadow-lg transition-shadow duration-300`}
+                                            title={method.name}
                                         >
                                             <div className="flex items-center justify-center h-6">
                                                 {method.icon}
@@ -271,37 +272,37 @@ const Footer = () => {
                     <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                         {/* Social Media */}
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Follow Us</h3>
+                            <h3 className="text-lg font-semibold text-white mb-6">Follow Us</h3>
                             <div className="flex space-x-4">
                                 <a
                                     href="https://www.facebook.com/Homaira22"
-                                    className="bg-white p-2 rounded-full shadow-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                    className="bg-gray-700 p-3 rounded-full shadow-lg text-white hover:bg-blue-600 hover:text-white transition-all duration-300 transform hover:-translate-y-1"
                                     aria-label="Facebook"
                                 >
                                     <Facebook size={20} />
                                 </a>
                                 <a
                                     href="#"
-                                    className="bg-white p-2 rounded-full shadow-sm text-gray-600 hover:text-pink-500 hover:bg-pink-50 transition-colors"
+                                    className="bg-gray-700 p-3 rounded-full shadow-lg text-white hover:bg-gradient-to-r from-pink-500 to-purple-500 hover:text-white transition-all duration-300 transform hover:-translate-y-1"
                                     aria-label="Instagram"
                                 >
                                     <Instagram size={20} />
                                 </a>
                                 <a
                                     href="#"
-                                    className="bg-white p-2 rounded-full shadow-sm text-gray-600 hover:text-sky-500 hover:bg-sky-50 transition-colors"
+                                    className="bg-gray-700 p-3 rounded-full shadow-lg text-white hover:bg-sky-500 hover:text-white transition-all duration-300 transform hover:-translate-y-1"
                                     aria-label="Twitter"
                                 >
                                     <Twitter size={20} />
                                 </a>
                             </div>
-                            <div className="mt-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Methods</h3>
+                            <div className="mt-8">
+                                <h3 className="text-lg font-semibold text-white mb-6">Payment Methods</h3>
                                 <div className="grid grid-cols-3 gap-3">
                                     {paymentMethods.map((method, index) => (
                                         <div
                                             key={index}
-                                            className={`${method.color} p-2 rounded-md flex items-center justify-center`}
+                                            className={`${method.color} p-3 rounded-md flex items-center justify-center shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300`}
                                             title={method.name}
                                         >
                                             <div className="flex items-center justify-center h-6">
@@ -315,8 +316,8 @@ const Footer = () => {
 
                         {/* Quick Links */}
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Links</h3>
-                            <ul className="space-y-2 text-sm">
+                            <h3 className="text-lg font-semibold text-white mb-6">Quick Links</h3>
+                            <ul className="space-y-1 text-sm">
                                 {[
                                     { name: 'Home', path: '/' },
                                     { name: 'About Us', path: '/about' },
@@ -330,7 +331,7 @@ const Footer = () => {
                                     <li key={index}>
                                         <Link
                                             to={link.path}
-                                            className="hover:text-blue-600 transition-colors block py-1"
+                                            className="hover:text-pink-400 transition-colors duration-200 block py-1.5"
                                         >
                                             {link.name}
                                         </Link>
@@ -341,62 +342,62 @@ const Footer = () => {
 
                         {/* Contact Info */}
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Us</h3>
-                            <div className="space-y-3 text-sm">
+                            <h3 className="text-lg font-semibold text-white mb-6">Contact Us</h3>
+                            <div className="space-y-4 text-sm">
                                 <div className="flex items-start space-x-3">
-                                    <MapPin size={18} className="mt-0.5 flex-shrink-0" />
+                                    <MapPin size={18} className="mt-0.5 flex-shrink-0 text-pink-400" />
                                     <span>123 Street Name, Cox's Bazar, Bangladesh</span>
                                 </div>
                                 <div className="flex items-center space-x-3">
-                                    <Mail size={18} />
-                                    <a href="mailto:info@mahira.com" className="hover:text-blue-600">
+                                    <Mail size={18} className="text-pink-400" />
+                                    <a href="mailto:info@mahira.com" className="hover:text-pink-400 transition-colors duration-200">
                                         info@mahira.com
                                     </a>
                                 </div>
                                 <div className="flex items-center space-x-3">
-                                    <Phone size={18} />
-                                    <a href="tel:+8801736600480" className="hover:text-blue-600">
+                                    <Phone size={18} className="text-pink-400" />
+                                    <a href="tel:+8801736600480" className="hover:text-pink-400 transition-colors duration-200">
                                         +880 01783694568
                                     </a>
                                 </div>
                                 <div className="flex items-center space-x-3">
-                                    <Phone size={18} />
-                                    <a href="tel:+8801736600480" className="hover:text-blue-600">
+                                    <Phone size={18} className="text-pink-400" />
+                                    <a href="tel:+8801736600480" className="hover:text-pink-400 transition-colors duration-200">
                                         +880 01783694568
                                     </a>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Opening Hours */}
+                        {/* Opening Hours & Newsletter */}
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Opening Hours</h3>
-                            <div className="space-y-2 text-sm">
+                            <h3 className="text-lg font-semibold text-white mb-6">Opening Hours</h3>
+                            <div className="space-y-3 text-sm mb-8">
                                 <div className="flex items-center space-x-3">
-                                    <Clock size={18} />
+                                    <Clock size={18} className="text-pink-400" />
                                     <span>Mon - Fri: 9am - 8pm</span>
                                 </div>
                                 <div className="flex items-center space-x-3">
-                                    <Clock size={18} />
+                                    <Clock size={18} className="text-pink-400" />
                                     <span>Saturday: 10am - 6pm</span>
                                 </div>
                                 <div className="flex items-center space-x-3">
-                                    <Clock size={18} />
+                                    <Clock size={18} className="text-pink-400" />
                                     <span>Sunday: Closed</span>
                                 </div>
                             </div>
 
-                            <h3 className="text-lg font-semibold text-gray-900 mt-6 mb-4">Newsletter</h3>
-                            <form className="space-y-3">
+                            <h3 className="text-lg font-semibold text-white mb-6">Newsletter</h3>
+                            <form className="space-y-4">
                                 <input
                                     type="email"
                                     placeholder="Your email address"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
+                                    className="w-full px-4 py-3 border border-gray-600 bg-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-white placeholder-gray-400"
                                     required
                                 />
                                 <button
                                     type="submit"
-                                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+                                    className="w-full px-4 py-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-md hover:from-pink-600 hover:to-pink-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
                                 >
                                     Subscribe
                                 </button>
@@ -405,21 +406,21 @@ const Footer = () => {
                     </div>
 
                     {/* Newsletter Section - Mobile */}
-                    <div className="mt-8 pt-4 border-t border-gray-200 md:hidden">
+                    <div className="mt-10 pt-6 border-t border-gray-700 md:hidden">
                         <div className="text-center">
-                            <h3 className="text-lg font-semibold text-gray-900 mt-1 mb-4">
+                            <h3 className="text-lg font-semibold text-white mt-1 mb-6">
                                 Subscribe to Our Newsletter
                             </h3>
-                            <form className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                            <form className="flex flex-col sm:flex-row items-center justify-center gap-4">
                                 <input
                                     type="email"
                                     placeholder="Your email address"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
+                                    className="w-full px-4 py-3 border border-gray-600 bg-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 text-white placeholder-gray-400"
                                     required
                                 />
                                 <button
                                     type="submit"
-                                    className="w-full sm:w-auto px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+                                    className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-md hover:from-pink-600 hover:to-pink-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
                                 >
                                     Subscribe
                                 </button>
@@ -428,9 +429,9 @@ const Footer = () => {
                     </div>
 
                     {/* Copyright */}
-                    <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
-                        <p>&copy; {currentYear} Mahira Collection. All rights reserved.</p>
-                        <p className="mt-1">Developed with ❤️ by Your Company</p>
+                    <div className="mt-4 md:mt-12 pt-4 border-t border-gray-700 text-center text-sm">
+                        <p className="text-gray-400">&copy; {currentYear} Mahira Collection. All rights reserved.</p>
+                        <p className="mt-2 text-gray-500">Developed with <span className="text-pink-400">❤️</span> by RAKIB</p>
                     </div>
                 </div>
             </div>

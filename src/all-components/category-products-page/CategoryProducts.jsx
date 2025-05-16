@@ -188,7 +188,7 @@ const CategoryProducts = () => {
                                 : product.name;
 
                             return (
-                                <li key={product.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow flex flex-col">
+                                <li key={product.id} className="border bg-[#ffc1da] rounded-lg overflow-hidden hover:shadow-md transition-shadow flex flex-col">
                                     <div className="p-1 flex-grow flex flex-col">
                                         <Link to={`/product/${product.productId || product.id}`} className="relative block">
                                             <div className="w-full h-[150px] md:h-auto md:aspect-square overflow-hidden">
@@ -198,7 +198,7 @@ const CategoryProducts = () => {
                                                     className="w-full h-full object-cover mb-2 rounded-lg"
                                                 />
                                             </div>
-                                            {hasDiscount && (
+                                            {product.discount !== 0 && hasDiscount && (
                                                 <div className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xs font-bold shadow-md">
                                                     {product.discount}%
                                                 </div>
@@ -254,13 +254,13 @@ const CategoryProducts = () => {
                                         <div className="flex md:flex-row flex-col gap-1 md:gap-2 mb-[1px]">
                                             <button
                                                 onClick={() => handleAddToCartOrRedirect(product)}
-                                                className="w-full border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-0.5 md:py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
+                                                className="w-full border border-blue-600 bg-blue-600 text-white hover:bg-red-700 hover:border-blue-700 py-0.5 md:py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
                                             >
                                                 {hasColorVariants ? 'Options' : 'Add to Cart'}
                                             </button>
                                             <button
                                                 onClick={() => handleOrderNow(product)}
-                                                className="w-full border border-green-600 bg-white text-green-600 hover:bg-green-600 hover:text-white py-0.5 md:py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
+                                                className="w-full border border-green-600 bg-green-600 text-white hover:bg-red-700 hover:border-green-700 py-0.5 md:py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
                                             >
                                                 Order Now
                                             </button>
@@ -309,4 +309,4 @@ const CategoryProducts = () => {
     );
 };
 
-export default CategoryProducts;
+export default CategoryProducts; 

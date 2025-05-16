@@ -32,6 +32,11 @@ export default function AdminNavbar() {
                             Banner Update
                         </Link>
                     </li>
+                    <li>
+                        <Link to="order-cart" className="hover:text-yellow-300">
+                            Dashbroad
+                        </Link>
+                    </li>
                 </ul>
             </div>
         </nav>

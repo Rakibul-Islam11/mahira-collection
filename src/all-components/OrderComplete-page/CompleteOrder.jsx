@@ -125,7 +125,7 @@ const CompleteOrder = () => {
     const sendOrderConfirmationSMS = async (orderId, customerPhone, customerName, items, total, paymentMethod) => {
         try {
             // গ্রাহকের জন্য SMS কন্টেন্ট
-            const customerMessage = `প্রিয় ${customerName}, আপনার অর্ডার #${orderId} সফলভাবে গ্রহণ করা হয়েছে! মোট: ৳${formatPrice(total)}। পণ্য: ${items.slice(0, 3).map(item => item.name).join(', ')}${items.length > 3 ? ` এবং আরো ${items.length - 3}টি` : ''}। অর্ডার সম্পর্কিত যেকোনো তথ্যের জন্য কল করুন আমাদের helpline এ 01783694568 . mahiracollection থেকে shopping এর জন্য আপনাকে ধন্যবাদ।`;
+            const customerMessage = `dear ${customerName}, your #${orderId} মোট: ৳${formatPrice(total)}। পণ্য: ${items.slice(0, 3).map(item => item.name).join(', ')}${items.length > 3 ? ` এবং আরো ${items.length - 3}টি` : ''}। helpline 01783694568`;
 
             // অ্যাডমিনের জন্য SMS কন্টেন্ট
             const paymentStatus = paymentMethod === 'bkash' ? 'bKash পেমেন্ট' : 'ক্যাশ অন ডেলিভারি';
@@ -141,7 +141,7 @@ const CompleteOrder = () => {
                         message: customerMessage
                     },
                     {
-                        to: "8801736600480",
+                        to: "8801783694568",
                         message: adminMessage
                     }
                 ]

@@ -1,23 +1,31 @@
 import { useEffect, useState } from 'react';
-import { collection, query, where, onSnapshot, getDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, getDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { Chart } from 'react-google-charts';
 import { db } from '../../../firbase.config';
 
 const OrderCart = () => {
     const [orders, setOrders] = useState([]);
+    const [filteredOrders, setFilteredOrders] = useState([]);
+    const [activeFilter, setActiveFilter] = useState('all');
     const [loading, setLoading] = useState(true);
     const [newOrderCount, setNewOrderCount] = useState(0);
+    const [showNotification, setShowNotification] = useState(false);
     const [monthlyStats, setMonthlyStats] = useState({
         confirmed: 0,
         pending: 0,
         completed: 0,
         cancelled: 0,
         unknown: 0,
-        chartData: []
+        chartData: [],
+        cancelCount: 0 // নতুন কাউন্টার যোগ করা হয়েছে
     });
+    const [processingOrders, setProcessingOrders] = useState({}); // লোডিং স্টেট ম্যানেজ করার জন্য
 
     // Determine order status based on orderStatus field and shipping status
     const determineOrderStatus = (order) => {
+        if (order.cancelled === true) {
+            return 'cancelled';
+        }
         if (order.orderStatus === false) {
             return 'pending';
         }
@@ -27,41 +35,64 @@ const OrderCart = () => {
         return order.shipping?.status || 'unknown';
     };
 
-    // Function to mark order as completed
-    const handleCompleteOrder = async (phoneNumber, orderId) => {
-        try {
-            // Get the order document reference
-            const orderRef = doc(db, 'orders', phoneNumber);
+    // Filter orders based on status
+    const filterOrders = (status) => {
+        setActiveFilter(status);
+        if (status === 'all') {
+            setFilteredOrders(orders);
+        } else {
+            const filtered = orders.filter(order => determineOrderStatus(order) === status);
+            setFilteredOrders(filtered);
+        }
+    };
 
-            // Get the current order data
+    // Function to update order status
+    const updateOrderStatus = async (phoneNumber, orderId, statusUpdates) => {
+        try {
+            setProcessingOrders(prev => ({ ...prev, [`${phoneNumber}-${orderId}`]: true }));
+
+            const orderRef = doc(db, 'orders', phoneNumber);
             const orderDoc = await getDoc(orderRef);
 
             if (orderDoc.exists()) {
                 const orderData = orderDoc.data();
 
                 if (orderData && orderData.orderInfo) {
-                    // Find and update the specific order
                     const updatedOrders = orderData.orderInfo.map(order => {
                         if (order.orderId === orderId) {
-                            return { ...order, orderStatus: true };
+                            return { ...order, ...statusUpdates };
                         }
                         return order;
                     });
 
-                    // Update the document in Firestore
                     await updateDoc(orderRef, {
                         orderInfo: updatedOrders
                     });
 
-                    alert('Order marked as completed successfully!');
+                    alert(`Order status updated successfully!`);
                 }
             } else {
                 alert('Order document not found!');
             }
         } catch (error) {
-            console.error('Error completing order:', error);
-            alert('Failed to complete order. Please try again.');
+            console.error('Error updating order status:', error);
+            alert('Failed to update order status. Please try again.');
+        } finally {
+            setProcessingOrders(prev => ({ ...prev, [`${phoneNumber}-${orderId}`]: false }));
         }
+    };
+
+    // Function to mark order as completed
+    const handleCompleteOrder = async (phoneNumber, orderId) => {
+        await updateOrderStatus(phoneNumber, orderId, { orderStatus: true });
+    };
+
+    // Function to mark order as cancelled
+    const handleCancelOrder = async (phoneNumber, orderId) => {
+        await updateOrderStatus(phoneNumber, orderId, {
+            cancelled: true,
+            cancelledAt: new Date().toISOString()
+        });
     };
 
     useEffect(() => {
@@ -72,12 +103,16 @@ const OrderCart = () => {
 
                 const unsubscribe = onSnapshot(q, (snapshot) => {
                     const ordersData = [];
+                    let cancelCount = 0; // ক্যানসেল কাউন্টার
+
                     snapshot.forEach((doc) => {
                         const orderDoc = doc.data();
                         if (orderDoc.orderInfo && Array.isArray(orderDoc.orderInfo)) {
                             orderDoc.orderInfo.forEach((order) => {
-                                // Ensure order has required fields
                                 if (order.orderId && order.confirmedAt) {
+                                    if (order.cancelled === true) {
+                                        cancelCount++; // ক্যানসেল অর্ডার কাউন্ট করা
+                                    }
                                     ordersData.push({
                                         id: order.orderId,
                                         phone: doc.id,
@@ -89,17 +124,17 @@ const OrderCart = () => {
                         }
                     });
 
-                    // Sort by confirmedAt (newest first)
                     ordersData.sort((a, b) => new Date(b.confirmedAt) - new Date(a.confirmedAt));
                     setOrders(ordersData);
+                    setFilteredOrders(ordersData);
 
-                    // Calculate new orders since last fetch
                     if (orders.length > 0 && ordersData.length > orders.length) {
-                        setNewOrderCount(ordersData.length - orders.length);
-                        setTimeout(() => setNewOrderCount(0), 5000);
+                        const count = ordersData.length - orders.length;
+                        setNewOrderCount(count);
+                        setShowNotification(true);
                     }
 
-                    calculateMonthlyStats(ordersData);
+                    calculateMonthlyStats(ordersData, cancelCount);
                     setLoading(false);
                 });
 
@@ -113,12 +148,11 @@ const OrderCart = () => {
         fetchOrders();
     }, [orders.length]);
 
-    const calculateMonthlyStats = (ordersData) => {
+    const calculateMonthlyStats = (ordersData, cancelCount) => {
         const currentDate = new Date();
         const currentMonth = currentDate.getMonth();
         const currentYear = currentDate.getFullYear();
 
-        // Filter orders for current month
         const monthlyOrders = ordersData.filter(order => {
             try {
                 const orderDate = new Date(order.confirmedAt);
@@ -128,14 +162,12 @@ const OrderCart = () => {
             }
         });
 
-        // Count by status
         const statusCounts = monthlyOrders.reduce((acc, order) => {
             const status = determineOrderStatus(order);
             acc[status] = (acc[status] || 0) + 1;
             return acc;
         }, {});
 
-        // Prepare chart data by day
         const ordersByDay = monthlyOrders.reduce((acc, order) => {
             try {
                 const orderDate = new Date(order.confirmedAt);
@@ -159,7 +191,6 @@ const OrderCart = () => {
             }
         }, {});
 
-        // Convert to array for chart
         const chartData = [
             ['Day', 'Confirmed', 'Pending', 'Completed', 'Cancelled', 'Unknown'],
             ...Object.entries(ordersByDay).map(([day, stats]) => [
@@ -178,7 +209,8 @@ const OrderCart = () => {
             completed: statusCounts.completed || 0,
             cancelled: statusCounts.cancelled || 0,
             unknown: statusCounts.unknown || 0,
-            chartData
+            chartData,
+            cancelCount // ক্যানসেল কাউন্ট স্টেটে সেট করা
         });
     };
 
@@ -214,6 +246,11 @@ const OrderCart = () => {
         }
     };
 
+    const handleCloseNotification = () => {
+        setShowNotification(false);
+        setNewOrderCount(0);
+    };
+
     if (loading) {
         return <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -223,11 +260,21 @@ const OrderCart = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             {/* New Order Notification */}
-            {newOrderCount > 0 && (
-                <div className="fixed top-4 right-4 animate-bounce">
+            {showNotification && (
+                <div className="fixed top-4 right-4 z-50">
                     <div className="relative">
-                        <div className="bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg">
-                            {newOrderCount} new order{newOrderCount > 1 ? 's' : ''} received!
+                        <div className="bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
+                            <span>
+                                {newOrderCount} new order{newOrderCount > 1 ? 's' : ''} received!
+                            </span>
+                            <button
+                                onClick={handleCloseNotification}
+                                className="ml-2 text-white hover:text-gray-200 focus:outline-none"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                            </button>
                         </div>
                         <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
                             {newOrderCount}
@@ -239,7 +286,7 @@ const OrderCart = () => {
             {/* Monthly Stats */}
             <div className="mb-8 bg-white rounded-lg shadow p-6">
                 <h2 className="text-2xl font-bold mb-4">Monthly Order Statistics</h2>
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
                     <div className="bg-blue-50 p-4 rounded-lg">
                         <h3 className="text-lg font-semibold text-blue-800">Confirmed</h3>
                         <p className="text-3xl font-bold">{monthlyStats.confirmed}</p>
@@ -259,6 +306,10 @@ const OrderCart = () => {
                     <div className="bg-gray-50 p-4 rounded-lg">
                         <h3 className="text-lg font-semibold text-gray-800">Unknown</h3>
                         <p className="text-3xl font-bold">{monthlyStats.unknown}</p>
+                    </div>
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold text-purple-800">Cancel Actions</h3>
+                        <p className="text-3xl font-bold">{monthlyStats.cancelCount}</p>
                     </div>
                 </div>
 
@@ -290,32 +341,103 @@ const OrderCart = () => {
             {/* Orders List */}
             <div className="bg-white rounded-lg shadow overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-200">
-                    <h2 className="text-2xl font-bold">All Orders</h2>
-                    <p className="text-gray-600">{orders.length} total orders</p>
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+                        <div>
+                            <h2 className="text-2xl font-bold">All Orders</h2>
+                            <p className="text-gray-600">{filteredOrders.length} orders ({activeFilter === 'all' ? 'all' : activeFilter})</p>
+                        </div>
+                        <div className="mt-4 md:mt-0 flex flex-wrap gap-2">
+                            <button
+                                onClick={() => filterOrders('all')}
+                                className={`px-3 py-1 rounded-full text-sm font-medium ${activeFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
+                            >
+                                All ({orders.length})
+                            </button>
+                            <button
+                                onClick={() => filterOrders('confirmed')}
+                                className={`px-3 py-1 rounded-full text-sm font-medium ${activeFilter === 'confirmed' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800 hover:bg-blue-200'}`}
+                            >
+                                Confirmed ({monthlyStats.confirmed})
+                            </button>
+                            <button
+                                onClick={() => filterOrders('pending')}
+                                className={`px-3 py-1 rounded-full text-sm font-medium ${activeFilter === 'pending' ? 'bg-yellow-600 text-white' : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'}`}
+                            >
+                                Pending ({monthlyStats.pending})
+                            </button>
+                            <button
+                                onClick={() => filterOrders('completed')}
+                                className={`px-3 py-1 rounded-full text-sm font-medium ${activeFilter === 'completed' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200'}`}
+                            >
+                                Completed ({monthlyStats.completed})
+                            </button>
+                            <button
+                                onClick={() => filterOrders('cancelled')}
+                                className={`px-3 py-1 rounded-full text-sm font-medium ${activeFilter === 'cancelled' ? 'bg-red-600 text-white' : 'bg-red-100 text-red-800 hover:bg-red-200'}`}
+                            >
+                                Cancelled ({monthlyStats.cancelled})
+                            </button>
+                            <button
+                                onClick={() => filterOrders('unknown')}
+                                className={`px-3 py-1 rounded-full text-sm font-medium ${activeFilter === 'unknown' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
+                            >
+                                Unknown ({monthlyStats.unknown})
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="divide-y divide-gray-200">
-                    {orders.length === 0 ? (
+                    {filteredOrders.length === 0 ? (
                         <div className="p-6 text-center text-gray-500">No orders found</div>
                     ) : (
-                        orders.map((order) => (
+                        filteredOrders.map((order) => (
                             <div key={order.orderId} className="p-6 hover:bg-gray-50">
                                 <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
                                     <div>
                                         <h3 className="text-lg font-semibold">Order #{order.orderId}</h3>
                                         <p className="text-gray-600">{formatDate(order.confirmedAt)}</p>
+                                        {order.cancelledAt && (
+                                            <p className="text-sm text-red-500">Cancelled at: {formatDate(order.cancelledAt)}</p>
+                                        )}
                                     </div>
                                     <div className="mt-2 md:mt-0 flex items-center gap-2">
                                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order)}`}>
                                             {formatStatusText(order)}
                                         </span>
                                         {determineOrderStatus(order) === 'pending' && (
-                                            <button
-                                                onClick={() => handleCompleteOrder(order.phone, order.orderId)}
-                                                className="px-3 py-1 bg-green-500 text-white rounded-full text-sm font-medium hover:bg-green-600 transition-colors"
-                                            >
-                                                Complete Order
-                                            </button>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleCompleteOrder(order.phone, order.orderId)}
+                                                    disabled={processingOrders[`${order.phone}-${order.orderId}`]}
+                                                    className="px-3 py-1 bg-green-500 text-white rounded-full text-sm font-medium hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                                >
+                                                    {processingOrders[`${order.phone}-${order.orderId}`] ? (
+                                                        <>
+                                                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            Processing
+                                                        </>
+                                                    ) : 'Complete'}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleCancelOrder(order.phone, order.orderId)}
+                                                    disabled={processingOrders[`${order.phone}-${order.orderId}`]}
+                                                    className="px-3 py-1 bg-red-500 text-white rounded-full text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                                >
+                                                    {processingOrders[`${order.phone}-${order.orderId}`] ? (
+                                                        <>
+                                                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            Processing
+                                                        </>
+                                                    ) : 'Cancel'}
+                                                </button>
+                                            </div>
                                         )}
                                     </div>
                                 </div>

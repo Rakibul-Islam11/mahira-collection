@@ -2,7 +2,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { db } from '../../../firbase.config';
 import { useQuery } from '@tanstack/react-query';
 import { collection, getDocs } from 'firebase/firestore';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -13,6 +13,7 @@ const AllProductsPage = () => {
     const currentPage = Number(searchParams.get('page')) || 1;
     const [loadingMore, setLoadingMore] = useState(false);
     const productsContainerRef = useRef(null);
+    const scrollPositionRef = useRef(0);
 
     // Format price to show in BDT with comma separators and without paisa
     const formatPrice = (price) => {
@@ -117,18 +118,20 @@ const AllProductsPage = () => {
 
     const loadMoreProducts = async () => {
         // Save current scroll position
-        const scrollPosition = window.scrollY || document.documentElement.scrollTop;
+        scrollPositionRef.current = window.scrollY || document.documentElement.scrollTop;
 
         setLoadingMore(true);
-        await new Promise(resolve => setTimeout(resolve, 500));
         setSearchParams({ page: currentPage + 1 });
-
-        // Restore scroll position after state update
-        setTimeout(() => {
-            window.scrollTo(0, scrollPosition);
-            setLoadingMore(false);
-        }, 0);
     };
+
+    // Restore scroll position after products update
+    useEffect(() => {
+        if (scrollPositionRef.current > 0) {
+            window.scrollTo(0, scrollPositionRef.current);
+            scrollPositionRef.current = 0; // Reset after restoring
+            setLoadingMore(false);
+        }
+    }, [displayedProducts]);
 
     if (isLoading) {
         return (
@@ -186,7 +189,7 @@ const AllProductsPage = () => {
                             const displayPrice = hasDiscount ? discountedPrice : Math.round(product.price);
 
                             return (
-                                <li key={product.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow flex flex-col">
+                                <li key={product.id} className="border bg-[#ffc1da] rounded-lg overflow-hidden hover:shadow-md transition-shadow flex flex-col">
                                     <div className="p-1 flex-grow flex flex-col">
                                         {/* Fixed size image container for mobile */}
                                         <Link to={`/product/${product.id}`} className="relative block">
@@ -197,7 +200,7 @@ const AllProductsPage = () => {
                                                     className="w-full h-full object-cover mb-2 rounded-lg"
                                                 />
                                             </div>
-                                            {hasDiscount && (
+                                            {product.discount !== 0 && hasDiscount && (
                                                 <div className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xs font-bold shadow-md">
                                                     {product.discount}%
                                                 </div>
@@ -226,11 +229,9 @@ const AllProductsPage = () => {
                                                         ৳{formatPrice(displayPrice)}
                                                     </div>
 
-                                                    {hasDiscount && (
-                                                        <div className="text-xs text-gray-500">
-                                                            <del>৳{formatPrice(Math.round(product.price))}</del>
-                                                        </div>
-                                                    )}
+                                                    <div className="text-xs text-gray-500">
+                                                        <del>৳{product.regularPrice}</del>
+                                                    </div>
                                                 </div>
                                                 {product.productType && (
                                                     <div className="text-xs text-red-400">
@@ -245,13 +246,13 @@ const AllProductsPage = () => {
                                         <div className="flex flex-col md:flex-row gap-1 md:gap-2 mb-[1px]">
                                             <button
                                                 onClick={() => handleAddToCartOrRedirect(product)}
-                                                className="w-full border border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white py-0.5 md:py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
+                                                className="w-full border border-blue-600 bg-blue-600 text-white hover:bg-red-700 hover:border-blue-700 py-0.5 md:py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
                                             >
                                                 {hasColorVariants ? 'Options' : 'Add to Cart'}
                                             </button>
                                             <button
                                                 onClick={() => handleOrderNow(product)}
-                                                className="w-full border border-green-600 bg-white text-green-600 hover:bg-green-600 hover:text-white py-0.5 md:py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
+                                                className="w-full border border-green-600 bg-green-600 text-white hover:bg-red-700 hover:border-green-700 py-0.5 md:py-2 px-3 rounded text-sm font-medium transition-colors duration-200"
                                             >
                                                 Order Now
                                             </button>

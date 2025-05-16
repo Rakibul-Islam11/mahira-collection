@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap');
+
+.typing-text {
+    font-family: 'Play', sans-serif;
+    font-size: 2rem;
+    background: linear-gradient(45deg, #ff007f, #ff7f00, #7fff00);
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-animation 5s ease infinite;
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+@keyframes gradient-animation {
+    0% {
+        background-position: 200% 0;
+    }
+
+    50% {
+        background-position: 0 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}

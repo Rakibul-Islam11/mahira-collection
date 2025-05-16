@@ -8,7 +8,7 @@ const MenuCategoryForm = () => {
         documentName: '',
         order: 0,
         type: 'dropdown',
-        items: [{ name: '', path: '' }],
+        items: [{ name: '', path: '', image: '' }],
         path: ''
     });
 
@@ -32,7 +32,7 @@ const MenuCategoryForm = () => {
     const addItem = () => {
         setFormData(prev => ({
             ...prev,
-            items: [...prev.items, { name: '', path: '' }]
+            items: [...prev.items, { name: '', path: '', image: '' }]
         }));
     };
 
@@ -85,7 +85,7 @@ const MenuCategoryForm = () => {
                 ...prev,
                 order: 0,
                 type: 'dropdown',
-                items: [{ name: '', path: '' }],
+                items: [{ name: '', path: '', image: '' }],
                 path: ''
             }));
 
@@ -170,33 +170,45 @@ const MenuCategoryForm = () => {
                                     <label className="block text-gray-700 text-sm font-medium mb-2">Subcategories:</label>
                                     <div className="space-y-4">
                                         {formData.items.map((item, index) => (
-                                            <div key={index} className="flex flex-col sm:flex-row gap-3">
-                                                <div className="flex-1">
-                                                    <input
-                                                        type="text"
-                                                        name="name"
-                                                        placeholder="Subcategory Name"
-                                                        value={item.name}
-                                                        onChange={(e) => handleItemChange(index, e)}
-                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <input
-                                                        type="text"
-                                                        name="path"
-                                                        placeholder="Path (e.g., /category/women)"
-                                                        value={item.path}
-                                                        onChange={(e) => handleItemChange(index, e)}
-                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                        required
-                                                    />
+                                            <div key={index} className="flex flex-col gap-3">
+                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                    <div>
+                                                        <input
+                                                            type="text"
+                                                            name="name"
+                                                            placeholder="Subcategory Name"
+                                                            value={item.name}
+                                                            onChange={(e) => handleItemChange(index, e)}
+                                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <input
+                                                            type="text"
+                                                            name="path"
+                                                            placeholder="Path (e.g., /category/women)"
+                                                            value={item.path}
+                                                            onChange={(e) => handleItemChange(index, e)}
+                                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <input
+                                                            type="text"
+                                                            name="image"
+                                                            placeholder="Image URL"
+                                                            value={item.image}
+                                                            onChange={(e) => handleItemChange(index, e)}
+                                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                        />
+                                                    </div>
                                                 </div>
                                                 <button
                                                     type="button"
                                                     onClick={() => removeItem(index)}
-                                                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors self-end"
                                                 >
                                                     Remove
                                                 </button>
@@ -307,6 +319,9 @@ const MenuCategoryForm = () => {
                                         </div>
                                     </li>
                                     <li className="text-gray-700">
+                                        <span className="font-medium">ইমেজ URL:</span> প্রতিটি সাবক্যাটেগরির জন্য একটি ইমেজ URL যোগ করতে পারেন (ঐচ্ছিক)
+                                    </li>
+                                    <li className="text-gray-700">
                                         <span className="font-medium">একাধিক সাবক্যাটেগরি:</span> একাধিক সাবক্যাটেগরি যোগ করতে "+ Add Subcategory" বাটনে ক্লিক করুন
                                     </li>
                                 </ul>
@@ -329,8 +344,8 @@ const MenuCategoryForm = () => {
 
                                     <h4 className="font-medium mt-4 mb-2">সাবক্যাটেগরি:</h4>
                                     <ul className="space-y-2 text-sm">
-                                        <li><span className="font-mono bg-gray-100 px-2 py-1 rounded">ডকুমেন্ট নাম:</span> Women <span className="font-mono bg-gray-100 px-2 py-1 rounded">সাবক্যাটেগরি নাম:</span> Dresses <span className="font-mono bg-gray-100 px-2 py-1 rounded">পাথ:</span> /category/women/dresses</li>
-                                        <li><span className="font-mono bg-gray-100 px-2 py-1 rounded">ডকুমেন্ট নাম:</span> Women <span className="font-mono bg-gray-100 px-2 py-1 rounded">সাবক্যাটেগরি নাম:</span> Tops <span className="font-mono bg-gray-100 px-2 py-1 rounded">পাথ:</span> /category/women/tops</li>
+                                        <li><span className="font-mono bg-gray-100 px-2 py-1 rounded">ডকুমেন্ট নাম:</span> Women <span className="font-mono bg-gray-100 px-2 py-1 rounded">সাবক্যাটেগরি নাম:</span> Dresses <span className="font-mono bg-gray-100 px-2 py-1 rounded">পাথ:</span> /category/women/dresses <span className="font-mono bg-gray-100 px-2 py-1 rounded">ইমেজ:</span> https://example.com/dresses.jpg</li>
+                                        <li><span className="font-mono bg-gray-100 px-2 py-1 rounded">ডকুমেন্ট নাম:</span> Women <span className="font-mono bg-gray-100 px-2 py-1 rounded">সাবক্যাটেগরি নাম:</span> Tops <span className="font-mono bg-gray-100 px-2 py-1 rounded">পাথ:</span> /category/women/tops <span className="font-mono bg-gray-100 px-2 py-1 rounded">ইমেজ:</span> https://example.com/tops.jpg</li>
                                     </ul>
                                 </div>
                             </section>
