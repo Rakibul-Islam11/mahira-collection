@@ -704,18 +704,7 @@ const ProductDetails = () => {
                     </div>
                     <div className="flex gap-1 md:gap-4 justify-start">
                         {/* Call Card */}
-                        <a
-                            href="tel:+8801407790565"
-                            className="flex-1 bg-white shadow-md rounded-lg px-1 py-2 md:p-4 text-center hover:shadow-lg cursor-pointer border border-gray-300"
-                        >
-                            <div className="flex flex-col items-center gap-2">
-                                <div className="bg-gray-100 p-3 rounded-full">
-                                    <IoCallSharp className="text-black text-2xl" />
-                                </div>
-                                <p className="font-semibold">কল করুন</p>
-                                <p className="text-black">01303129042</p>
-                            </div>
-                        </a>
+                        
 
                         {/* WhatsApp Card */}
                         <a

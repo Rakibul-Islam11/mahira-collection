@@ -8,11 +8,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Footer from './all-components/footer-page/Footer'
 import ScrollToTop from './all-components/ScrollToTop'
 import { AuthProvider } from './all-components/contexts-page/AuthContext'
+import { useEffect } from 'react'
+import { initFacebookPixel } from './facebookPixel'
 
 const queryClient = new QueryClient();
 
 function App() {
 
+  useEffect(() => {
+    initFacebookPixel();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

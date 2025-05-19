@@ -35,16 +35,15 @@ const MastercardIcon = () => (
 const Footer = () => {
     const currentYear = new Date().getFullYear();
     const fullText = `
-        Mahira Collection একটি অনলাইন ফ্যাশন শপ যেখানে মেয়েদের ও ছেলেদের জন্য আধুনিক এবং ট্রেন্ডি পোশাক ও অ্যাক্সেসরিজ পাওয়া যায়।
-        আমাদের সংগ্রহে রয়েছে পার্টি, ক্যাজুয়াল ও ট্র্যাডিশনাল সব ধরনের পোশাক।
-        মেয়েদের জন্য রয়েছে দোপাট্টা, কুর্তি, শাড়ি, হিজাব, ব্যাগ ও গহনার দারুণ কালেকশন।
-        ছেলেদের জন্য রয়েছে পাঞ্জাবি, শার্ট, টি-শার্ট, ঘড়ি, চশমা ও জুতা।
-        Mahira Collection সব বয়সের জন্য মানসম্মত পণ্যের নিশ্চয়তা দেয়।
-        আমরা নতুন ট্রেন্ড ও সিজন অনুযায়ী কালেকশন আপডেট করি।
-        দেশজুড়ে দ্রুত এবং নির্ভরযোগ্য ডেলিভারি সার্ভিস রয়েছে।
-        আমাদের ওয়েবসাইট ব্যবহার করা সহজ এবং মোবাইল ফ্রেন্ডলি।
-        বিশেষ ছাড় ও অফারের মাধ্যমে আমরা কাস্টমারদের জন্য শপিং আরও উপভোগ্য করে তুলি।
-        Mahira Collection মানে স্টাইল, আরাম ও গুণগত মানের নিশ্চয়তা।
+        Mahira Collection একটি বিশ্বস্ত অনলাইন প্ল্যাটফর্ম, যেখানে আপনি পাবেন সরাসরি চায়না থেকে আমদানি করা প্রিমিয়াম কোয়ালিটির প্রোডাক্ট।  কোনোভাবেই লোকাল বা নিম্নমানের প্রোডাক্টের সাথে আপস করি না।
+
+গত চার বছর ধরে Mahira Collection সততা, মান এবং গ্রাহক সন্তুষ্টির ভিত্তিতে সফলভাবে আমাদের যাত্রা চালিয়ে যাচ্ছে। আমাদের প্রতিটি পণ্য যত্নসহকারে বাছাই করা, যাতে আপনি পান ট্রেন্ডি, স্টাইলিশ ও টেকসই ফ্যাশনের অভিজ্ঞতা।
+
+আমাদের কাছে রয়েছে দুই ধরনের অপশন — স্টক থাকা প্রোডাক্ট এবং প্রি-অর্ডার (pre-order) সুবিধা, যাতে আপনি আপনার পছন্দমতো কেনাকাটার সুযোগ পান।
+
+Mahira Collection-এ আমরা বিশ্বাস করি, কোয়ালিটি কোনো বিলাসিতা নয় — বরং এটা হওয়া উচিত প্রতিটি গ্রাহকের প্রাপ্য। তাই, আমাদের সঙ্গে থাকুন — এবং নিশ্চিত করুন সেরা মানের চায়নিজ কালেকশনের নির্ভরযোগ্য গন্তব্য।
+
+ধন্যবাদ।
     `;
     const [isReadMore, setIsReadMore] = useState(false);
     const visibleText = isReadMore ? fullText : fullText.split('\n').slice(0, 4).join('\n');
@@ -321,11 +320,11 @@ const Footer = () => {
                                 {[
                                     { name: 'Home', path: '/' },
                                     { name: 'About Us', path: '/about' },
-                                    { name: 'Products', path: '/products' },
+                                    { name: 'Products', path: '/all-categories' },
                                     { name: 'Contact', path: '/contact' },
-                                    { name: 'Privacy Policy', path: '/privacy-policy' },
-                                    { name: 'Terms & Conditions', path: '/terms' },
-                                    { name: 'Returns & Exchanges', path: '/returns' },
+                                    { name: 'Privacy Policy', path: '/privecy' },
+                                    { name: 'Terms & Conditions', path: '/terms-condition' },
+                                    { name: 'Returns & Exchanges', path: '/retrun' },
                                     { name: 'Shipping Policy', path: '/shipping' },
                                 ].map((link, index) => (
                                     <li key={index}>

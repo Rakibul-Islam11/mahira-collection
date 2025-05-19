@@ -44,14 +44,14 @@ const TopNav = () => {
                 {/* Contact Info - Premium Styled */}
                 <div className="flex items-center space-x-4 md:space-x-6">
                     <a
-                        href="tel:+8801712345678"
+                        href="tel:+8801783694568"
                         className="flex items-center text-sm md:text-[15px] font-medium text-gray-700 hover:text-pink-600 transition-all duration-300 group"
                     >
                         <div className="relative p-1.5 rounded-full bg-pink-100 group-hover:bg-pink-200 mr-2 transition-colors duration-300">
                             <IoMdCall className="text-pink-600" size={16} />
                             <span className="absolute -top-1 -right-1 w-3 h-3 bg-pink-500 rounded-full animate-pulse"></span>
                         </div>
-                        <span className="font-sans">+880 1712 345 678</span>
+                        <span className="font-sans">+8801783694568</span>
                     </a>
                     <a
                         href="mailto:info@mahira.com"

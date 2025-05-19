@@ -15,6 +15,7 @@ const ProductUpdate = () => {
     const [editingProduct, setEditingProduct] = useState(null);
     const [editFormData, setEditFormData] = useState({
         name: '',
+        regularPrice: '',
         price: '',
         discount: 0,
         description: '',
@@ -57,6 +58,7 @@ const ProductUpdate = () => {
         return {
             id: doc.id,
             name: data.name || '',
+            regularPrice: data.regularPrice || data.price || 0,
             price: data.price || 0,
             discount: data.discount || 0,
             description: data.description || '',
@@ -120,6 +122,7 @@ const ProductUpdate = () => {
         setEditingProduct(product.id);
         setEditFormData({
             name: product.name || '',
+            regularPrice: product.regularPrice || product.price || 0,
             price: product.price || 0,
             discount: product.discount || 0,
             description: product.description || '',
@@ -127,13 +130,11 @@ const ProductUpdate = () => {
             mainImage: product.mainImage || '',
             colorVariants: Array.isArray(product.colorVariants)
                 ? product.colorVariants.map(variant => ({
-                    ...variant,
-                    sizes: Array.isArray(variant.sizes)
-                        ? variant.sizes.map(size => ({
-                            ...size,
-                            stock: Number(size.stock) || 0
-                        }))
-                        : []
+                    colorName: variant.colorName || '',
+                    thumbnail: variant.thumbnail || '',
+                    images: variant.images || [],
+                    sizes: variant.sizes || [],
+                    stock: variant.stock || 0
                 }))
                 : []
         });
@@ -142,7 +143,7 @@ const ProductUpdate = () => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
 
-        if (name === 'price' || name === 'discount') {
+        if (name === 'regularPrice' || name === 'price' || name === 'discount') {
             const isValid = /^[0-9]*\.?[0-9]*$/.test(value);
             if (!isValid && value !== '') return;
         }
@@ -154,7 +155,7 @@ const ProductUpdate = () => {
     };
 
     const handleColorVariantChange = (colorIndex, field, value) => {
-        const updatedColorVariants = [...(editFormData.colorVariants || [])];
+        const updatedColorVariants = [...editFormData.colorVariants];
 
         if (!updatedColorVariants[colorIndex]) {
             updatedColorVariants[colorIndex] = {
@@ -166,11 +167,10 @@ const ProductUpdate = () => {
             };
         }
 
-        if (field === 'images') {
-            updatedColorVariants[colorIndex][field] = value.split(',').map(url => url.trim());
-        } else {
-            updatedColorVariants[colorIndex][field] = value;
-        }
+        updatedColorVariants[colorIndex] = {
+            ...updatedColorVariants[colorIndex],
+            [field]: field === 'images' ? value.split(',').map(url => url.trim()) : value
+        };
 
         setEditFormData({
             ...editFormData,
@@ -178,10 +178,8 @@ const ProductUpdate = () => {
         });
     };
 
-    const handleSizeStockChange = (colorIndex, sizeIndex, value) => {
-        if (!/^\d*$/.test(value)) return;
-
-        const updatedColorVariants = [...(editFormData.colorVariants || [])];
+    const handleSizeChange = (colorIndex, sizeIndex, field, value) => {
+        const updatedColorVariants = [...editFormData.colorVariants];
 
         if (!updatedColorVariants[colorIndex]) {
             updatedColorVariants[colorIndex] = {
@@ -193,7 +191,7 @@ const ProductUpdate = () => {
             };
         }
 
-        if (!Array.isArray(updatedColorVariants[colorIndex].sizes)) {
+        if (!updatedColorVariants[colorIndex].sizes) {
             updatedColorVariants[colorIndex].sizes = [];
         }
 
@@ -204,8 +202,12 @@ const ProductUpdate = () => {
             };
         }
 
-        updatedColorVariants[colorIndex].sizes[sizeIndex].stock = parseInt(value) || 0;
+        updatedColorVariants[colorIndex].sizes[sizeIndex] = {
+            ...updatedColorVariants[colorIndex].sizes[sizeIndex],
+            [field]: field === 'stock' ? parseInt(value) || 0 : value
+        };
 
+        // Calculate total stock
         const totalStock = updatedColorVariants[colorIndex].sizes.reduce(
             (sum, size) => sum + (size.stock || 0), 0
         );
@@ -303,7 +305,7 @@ const ProductUpdate = () => {
                 ) : (
                     <>
                         {filteredProducts.map((product) => (
-                            <div key={product.id} className="w-[450px] sm:w-[100%] border border-red-600 rounded-lg p-3 sm:p-4 md:p-6 shadow-sm bg-white for_res">
+                            <div key={product.id} className="w-[450px] sm:w-[100%] border border-gray-200 rounded-lg p-3 sm:p-4 md:p-6 shadow-sm bg-white for_res">
                                 {editingProduct === product.id ? (
                                     // Edit Form
                                     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
@@ -334,7 +336,20 @@ const ProductUpdate = () => {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Price *</label>
+                                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Regular Price *</label>
+                                                    <input
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        pattern="[0-9]*\.?[0-9]*"
+                                                        name="regularPrice"
+                                                        value={editFormData.regularPrice}
+                                                        onChange={handleInputChange}
+                                                        className="w-full p-1 sm:p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                                                        required
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Sale Price</label>
                                                     <input
                                                         type="text"
                                                         inputMode="numeric"
@@ -343,7 +358,6 @@ const ProductUpdate = () => {
                                                         value={editFormData.price}
                                                         onChange={handleInputChange}
                                                         className="w-full p-1 sm:p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
-                                                        required
                                                     />
                                                 </div>
                                                 <div>
@@ -490,18 +504,18 @@ const ProductUpdate = () => {
                                                                         <input
                                                                             type="text"
                                                                             value={size.size || ''}
-                                                                            readOnly
-                                                                            className="w-full p-1 sm:p-2 border border-gray-300 rounded bg-gray-100 text-xs sm:text-sm"
+                                                                            onChange={(e) => handleSizeChange(colorIndex, sizeIndex, 'size', e.target.value)}
+                                                                            className="w-full p-1 sm:p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 text-xs sm:text-sm"
+                                                                            required
                                                                         />
                                                                     </div>
                                                                     <div>
                                                                         <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Stock *</label>
                                                                         <input
-                                                                            type="text"
-                                                                            inputMode="numeric"
-                                                                            pattern="[0-9]*"
+                                                                            type="number"
+                                                                            min="0"
                                                                             value={size.stock || 0}
-                                                                            onChange={(e) => handleSizeStockChange(colorIndex, sizeIndex, e.target.value)}
+                                                                            onChange={(e) => handleSizeChange(colorIndex, sizeIndex, 'stock', e.target.value)}
                                                                             className="w-full p-1 sm:p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 text-xs sm:text-sm"
                                                                             required
                                                                         />
@@ -579,22 +593,22 @@ const ProductUpdate = () => {
                                             </div>
                                         )}
 
-                                            <p className="text-gray-600 break-words mb-3 sm:mb-4 text-xs sm:text-sm">
-                                                {product.description || 'No description available'}
-                                            </p>
+                                        <p className="text-gray-600 break-words mb-3 sm:mb-4 text-xs sm:text-sm">
+                                            {product.description || 'No description available'}
+                                        </p>
 
                                         <div className="flex items-center mb-3 sm:mb-4">
                                             {product.discount > 0 ? (
                                                 <div className="flex items-center space-x-1 sm:space-x-2">
                                                     <span className="text-sm sm:text-base font-semibold text-gray-500 line-through">
-                                                        ${product.price || 0}
+                                                        ${product.regularPrice || product.price || 0}
                                                     </span>
                                                     <span className="text-sm sm:text-base font-semibold text-red-600">
-                                                        ${(product.price * (1 - product.discount / 100)).toFixed(2)}
+                                                        ${product.price || 0}
                                                     </span>
                                                 </div>
                                             ) : (
-                                                <span className="text-sm sm:text-base font-semibold">${product.price || 0}</span>
+                                                <span className="text-sm sm:text-base font-semibold">${product.regularPrice || product.price || 0}</span>
                                             )}
                                         </div>
 

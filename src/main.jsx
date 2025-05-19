@@ -27,6 +27,12 @@ import Up from './all-components/admin-panel-page/Up.jsx'
 import MenuCategoryForm from './all-components/admin-panel-page/MenuCategoryForm.jsx'
 import PrivateRoute from './all-components/admin-panel-page/PrivateRoute.jsx'
 import AdminLogin from './all-components/admin-panel-page/AdminLogin.jsx'
+import TermsCondi from './all-components/terms-abd-condition-page/TermsCondi.jsx'
+import PrivacyPolicy from './all-components/terms-abd-condition-page/PrivacyPolicy.jsx'
+import RetrunAnd from './all-components/terms-abd-condition-page/RetrunAnd.jsx'
+import ShippingPol from './all-components/terms-abd-condition-page/ShippingPol.jsx'
+import AboutUs from './all-components/terms-abd-condition-page/AboutUs.jsx'
+
 
 const router = createBrowserRouter([
   {
@@ -86,6 +92,27 @@ const router = createBrowserRouter([
         element: <TrandingProduct></TrandingProduct>
       },
       {
+        path: '/terms-condition',
+        element: <TermsCondi></TermsCondi>
+      },
+      {
+        path: '/privecy',
+        element: <PrivacyPolicy></PrivacyPolicy>
+
+      },
+      {
+        path: '/retrun',
+        element: <RetrunAnd></RetrunAnd>
+      },
+      {
+        path: '/shipping',
+        element: <ShippingPol></ShippingPol>
+      },
+      {
+        path: '/about',
+        element: <AboutUs></AboutUs>
+      },
+      {
         path: '/footer',
         element : <Footer></Footer>
       },
@@ -101,6 +128,7 @@ const router = createBrowserRouter([
         path: '/admin',
         element: <AdminLogin />,
       },
+
       {
         path: '/admin-panel',
         element: (

@@ -420,7 +420,7 @@ const Checkout = () => {
                                             </div>
                                             <div className="ml-3">
                                                 <label htmlFor="agreeTerms" className="text-sm md:text-base font-medium text-gray-800">
-                                                    I agree to the <a href="/terms" className="text-blue-600 hover:text-blue-800 underline">Terms and Conditions</a> <span className="text-red-500">*</span>
+                                                    I agree to the <a href="/terms-condition" className="text-blue-600 hover:text-blue-800 underline">Terms and Conditions</a> <span className="text-red-500">*</span>
                                                 </label>
                                                 {errors.agreeTerms && (
                                                     <p className="mt-1 text-xs md:text-sm text-red-600">{errors.agreeTerms}</p>

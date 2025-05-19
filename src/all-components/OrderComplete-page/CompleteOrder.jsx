@@ -125,7 +125,7 @@ const CompleteOrder = () => {
     const sendOrderConfirmationSMS = async (orderId, customerPhone, customerName, items, total, paymentMethod) => {
         try {
             // গ্রাহকের জন্য SMS কন্টেন্ট
-            const customerMessage = `dear ${customerName}, your #${orderId} মোট: ৳${formatPrice(total)}। পণ্য: ${items.slice(0, 3).map(item => item.name).join(', ')}${items.length > 3 ? ` এবং আরো ${items.length - 3}টি` : ''}। helpline 01783694568`;
+            const customerMessage = `dear ${customerName}, your id #${orderId} মোট: ৳${formatPrice(total)}। পণ্য: ${items.slice(0, 3).map(item => item.name).join(', ')}${items.length > 3 ? ` এবং আরো ${items.length - 3}টি` : ''}`;
 
             // অ্যাডমিনের জন্য SMS কন্টেন্ট
             const paymentStatus = paymentMethod === 'bkash' ? 'bKash পেমেন্ট' : 'ক্যাশ অন ডেলিভারি';

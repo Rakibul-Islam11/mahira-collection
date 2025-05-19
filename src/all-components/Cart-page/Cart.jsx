@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firbase.config';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+const MySwal = withReactContent(Swal);
 
 const Cart = () => {
     const [cartItems, setCartItems] = useState([]);
@@ -12,11 +16,94 @@ const Cart = () => {
     const [couponMessage, setCouponMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [productsData, setProductsData] = useState({});
+    const [isCheckoutProcessing, setIsCheckoutProcessing] = useState(false);
     const navigate = useNavigate();
 
     const formatPrice = (price) => {
         const num = typeof price === 'string' ? parseFloat(price) : price;
         return Math.floor(num).toLocaleString('en-US');
+    };
+
+    // Toast notification functions
+    const showToast = (icon, title, text) => {
+        MySwal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: icon,
+            title: title,
+            text: text,
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        });
+    };
+
+    const showSuccessToast = (message) => {
+        showToast('success', 'Success!', message);
+    };
+
+    const showErrorToast = (message) => {
+        showToast('error', 'Error!', message);
+    };
+
+    const showWarningToast = (message) => {
+        showToast('warning', 'Warning!', message);
+    };
+
+    const showConfirmationDialog = (title, text, confirmButtonText) => {
+        return MySwal.fire({
+            title: title,
+            text: text,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: confirmButtonText,
+            cancelButtonText: 'Cancel',
+            reverseButtons: true,
+            customClass: {
+                confirmButton: 'swal-confirm-btn',
+                cancelButton: 'swal-cancel-btn'
+            }
+        });
+    };
+
+    const showOrderCompleteDialog = () => {
+        return MySwal.fire({
+            title: 'Order Completed!',
+            text: 'Your order has been placed successfully!',
+            icon: 'success',
+            confirmButtonText: 'Continue Shopping',
+            confirmButtonColor: '#3085d6',
+            allowOutsideClick: false,
+            customClass: {
+                popup: 'swal-wide'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.removeItem('cart');
+                window.dispatchEvent(new Event('storage'));
+                navigate('/');
+            }
+        });
+    };
+
+    const showOrderCancelDialog = () => {
+        return MySwal.fire({
+            title: 'Order Cancelled',
+            text: 'Your order has been cancelled',
+            icon: 'info',
+            confirmButtonText: 'Continue Shopping',
+            confirmButtonColor: '#3085d6'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                navigate('/');
+            }
+        });
     };
 
     useEffect(() => {
@@ -40,6 +127,7 @@ const Cart = () => {
                     }
                 } catch (error) {
                     console.error('Error fetching product data:', error);
+                    showErrorToast('Failed to load product information');
                 }
             }
 
@@ -110,13 +198,26 @@ const Cart = () => {
         localStorage.setItem('cart', JSON.stringify(updatedCart));
         setCartItems(updatedCart);
         window.dispatchEvent(new Event('storage'));
+        showSuccessToast('Quantity updated successfully');
     };
 
-    const removeItem = (id) => {
-        const updatedCart = cartItems.filter(item => item.id !== id);
-        localStorage.setItem('cart', JSON.stringify(updatedCart));
-        setCartItems(updatedCart);
-        window.dispatchEvent(new Event('storage'));
+    const removeItem = async (id) => {
+        const itemToRemove = cartItems.find(item => item.id === id);
+        if (!itemToRemove) return;
+
+        const result = await showConfirmationDialog(
+            'Remove Item',
+            `Are you sure you want to remove ${itemToRemove.name} from your cart?`,
+            'Yes, remove it'
+        );
+
+        if (result.isConfirmed) {
+            const updatedCart = cartItems.filter(item => item.id !== id);
+            localStorage.setItem('cart', JSON.stringify(updatedCart));
+            setCartItems(updatedCart);
+            window.dispatchEvent(new Event('storage'));
+            showSuccessToast('Item removed from cart');
+        }
     };
 
     const calculateSubtotal = () => {
@@ -134,11 +235,13 @@ const Cart = () => {
 
     const handleShippingChange = (e) => {
         setShippingLocation(e.target.value);
+        showSuccessToast('Shipping location updated');
     };
 
     const handleCouponApply = async () => {
         if (!couponCode.trim()) {
             setCouponMessage('Please enter a coupon code');
+            showErrorToast('Please enter a coupon code');
             return;
         }
 
@@ -154,39 +257,64 @@ const Cart = () => {
             if (mockResponse.valid) {
                 setDiscount(mockResponse.discountAmount);
                 setCouponMessage(`Coupon applied! Discount: ৳${formatPrice(mockResponse.discountAmount)}`);
+                showSuccessToast('Coupon applied successfully!');
             } else {
                 setDiscount(0);
                 setCouponMessage(mockResponse.message);
+                showErrorToast('Invalid coupon code');
             }
         } catch (error) {
             console.error('Error applying coupon:', error);
             setCouponMessage('Failed to apply coupon. Please try again.');
+            showErrorToast('Failed to apply coupon');
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleProceedToCheckout = () => {
-        const checkoutData = {
-            cartItems: cartItems.map(item => ({
-                ...item,
-                price: typeof item.price === 'string' ? parseFloat(item.price) : item.price
-            })),
-            shipping: {
-                location: shippingLocation,
-                charge: shippingCharge
-            },
-            coupon: {
-                code: couponCode,
-                discount: discount
+    const handleProceedToCheckout = async () => {
+        if (cartItems.length === 0) {
+            showErrorToast('Your cart is empty');
+            return;
+        }
+
+        const result = await showConfirmationDialog(
+            'Confirm Checkout',
+            'Are you sure you want to proceed to checkout?',
+            'Yes, proceed'
+        );
+
+        if (result.isConfirmed) {
+            setIsCheckoutProcessing(true);
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                const checkoutData = {
+                    cartItems: cartItems.map(item => ({
+                        ...item,
+                        price: typeof item.price === 'string' ? parseFloat(item.price) : item.price
+                    })),
+                    shipping: {
+                        location: shippingLocation,
+                        charge: shippingCharge
+                    },
+                    coupon: {
+                        code: couponCode,
+                        discount: discount
+                    }
+                };
+
+                localStorage.setItem('checkoutState', JSON.stringify(checkoutData));
+                navigate('/checkout', { state: checkoutData });
+                showSuccessToast('Redirecting to checkout...');
+            } catch (error) {
+                showErrorToast('Failed to process checkout. Please try again.');
+                console.error('Checkout error:', error);
+            } finally {
+                setIsCheckoutProcessing(false);
             }
-        };
-
-        // Save to localStorage as backup
-        localStorage.setItem('checkoutState', JSON.stringify(checkoutData));
-
-        // Navigate with state
-        navigate('/checkout', { state: checkoutData });
+        }
     };
 
     if (isLoading && cartItems.length === 0) {
@@ -496,9 +624,20 @@ const Cart = () => {
                                     <div className="mt-3 sm:mt-4">
                                         <button
                                             onClick={handleProceedToCheckout}
-                                            className="w-full flex justify-center items-center px-3 sm:px-4 py-1.5 sm:py-2 md:py-3 border border-transparent rounded-md shadow-sm text-xs sm:text-sm md:text-base font-medium text-white bg-green-600 hover:bg-green-700"
+                                            disabled={isCheckoutProcessing}
+                                            className="w-full flex justify-center items-center px-3 sm:px-4 py-1.5 sm:py-2 md:py-3 border border-transparent rounded-md shadow-sm text-xs sm:text-sm md:text-base font-medium text-white bg-green-600 hover:bg-green-700 disabled:bg-green-400"
                                         >
-                                            Proceed to Checkout
+                                            {isCheckoutProcessing ? (
+                                                <>
+                                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    Processing...
+                                                </>
+                                            ) : (
+                                                'Proceed to Checkout'
+                                            )}
                                         </button>
                                     </div>
 

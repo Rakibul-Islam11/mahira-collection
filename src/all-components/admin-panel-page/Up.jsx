@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../../../firbase.config';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+const MySwal = withReactContent(Swal);
 
 const Up = () => {
     // Main form state
@@ -220,9 +224,19 @@ const Up = () => {
         }));
     };
 
-    // Form submission
+    // Form submission with loading state
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Show loading spinner
+        MySwal.fire({
+            title: 'Uploading Product...',
+            html: 'Please wait while we upload your product',
+            allowOutsideClick: false,
+            didOpen: () => {
+                MySwal.showLoading();
+            }
+        });
 
         try {
             // Convert empty string number fields to 0
@@ -294,8 +308,16 @@ const Up = () => {
             // Set the document with the product data
             await setDoc(docRef, productData);
 
-            console.log('Document written with ID: ', processedData.documentName);
-            alert('Product uploaded successfully!');
+            // Close loading spinner
+            MySwal.close();
+
+            // Show success message
+            MySwal.fire({
+                title: 'Success!',
+                text: 'Product uploaded successfully!',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
 
             // Reset form (except collection and document names)
             setFormData(prev => ({
@@ -333,8 +355,14 @@ const Up = () => {
             }));
 
         } catch (error) {
+            // Close loading spinner and show error
+            MySwal.fire({
+                title: 'Error!',
+                text: 'Failed to upload product. Please try again.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
             console.error('Error adding document: ', error);
-            alert('Error uploading product!');
         }
     };
 
@@ -364,7 +392,7 @@ const Up = () => {
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Document ID <span className="text-red-500">*</span>
-                                <span className="text-xs text-red-500 block">("should be must  camel case")</span>
+                                <span className="text-xs text-red-500 block">("should be must  camel case e.g, braidalLediesBag")</span>
                             </label>
                             <input
                                 type="text"
@@ -534,7 +562,7 @@ const Up = () => {
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Category ID <span className="text-red-500">*</span>
-                                <span className="text-xs text-gray-500 block">(should match category name)</span>
+                                <span className="text-xs text-red-500 block">(should match category name)</span>
                             </label>
                             <input
                                 type="text"
@@ -564,7 +592,7 @@ const Up = () => {
                     <div className="mt-4">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Tags
-                            <span className="text-xs text-gray-500 block">(comma separated, e.g., "new, trending, 2023")</span>
+                            <span className="text-xs text-gray-500 block">(this product search by this kind of tags.comma separated, e.g., "bag, ladies bag, cute bag ")</span>
                         </label>
                         <input
                             type="text"
