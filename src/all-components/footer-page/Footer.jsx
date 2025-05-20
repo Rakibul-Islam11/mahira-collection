@@ -34,19 +34,35 @@ const MastercardIcon = () => (
 
 const Footer = () => {
     const currentYear = new Date().getFullYear();
-    const fullText = `
-        Mahira Collection একটি বিশ্বস্ত অনলাইন প্ল্যাটফর্ম, যেখানে আপনি পাবেন সরাসরি চায়না থেকে আমদানি করা প্রিমিয়াম কোয়ালিটির প্রোডাক্ট।  কোনোভাবেই লোকাল বা নিম্নমানের প্রোডাক্টের সাথে আপস করি না।
+    const fullText = `Mahira Collection একটি বিশ্বস্ত অনলাইন প্ল্যাটফর্ম, যেখানে আপনি পাবেন সরাসরি চায়না থেকে আমদানি করা প্রিমিয়াম কোয়ালিটির প্রোডাক্ট।  Mahira Collection, কোনোভাবেই লোকাল বা নিম্নমানের প্রোডাক্টের সাথে আপস করে না।
 
-গত চার বছর ধরে Mahira Collection সততা, মান এবং গ্রাহক সন্তুষ্টির ভিত্তিতে সফলভাবে আমাদের যাত্রা চালিয়ে যাচ্ছে। আমাদের প্রতিটি পণ্য যত্নসহকারে বাছাই করা, যাতে আপনি পান ট্রেন্ডি, স্টাইলিশ ও টেকসই ফ্যাশনের অভিজ্ঞতা।
+২০২০ ইংঃ  থেকে  Mahira Collection সততা, মান এবং গ্রাহক সন্তুষ্টির ভিত্তিতে সফলভাবে ব্যবসায়িক  যাত্রা চালিয়ে যাচ্ছে। আমাদের প্রতিটি পণ্য যত্নসহকারে বাছাই করা, যাতে আপনি পান ট্রেন্ডি, স্টাইলিশ ও টেকসই ফ্যাশনের অভিজ্ঞতা।
 
-আমাদের কাছে রয়েছে দুই ধরনের অপশন — স্টক থাকা প্রোডাক্ট এবং প্রি-অর্ডার (pre-order) সুবিধা, যাতে আপনি আপনার পছন্দমতো কেনাকাটার সুযোগ পান।
+আমাদের কাছে রয়েছে দুই ধরনের অপশন — স্টক প্রোডাক্ট এবং প্রি-অর্ডার (pre-order) সুবিধা, যাতে আপনি আপনার পছন্দমতো কেনাকাটার সুযোগ পান।
 
-Mahira Collection-এ আমরা বিশ্বাস করি, কোয়ালিটি কোনো বিলাসিতা নয় — বরং এটা হওয়া উচিত প্রতিটি গ্রাহকের প্রাপ্য। তাই, আমাদের সঙ্গে থাকুন — এবং নিশ্চিত করুন সেরা মানের চায়নিজ কালেকশনের নির্ভরযোগ্য গন্তব্য।
+Mahira Collection-এ আমরা বিশ্বাস করি, কোয়ালিটি কোনো বিলাসিতা নয় — বরং এটা হওয়া উচিত প্রতিটি গ্রাহকের প্রাপ্য। তাই, আমাদের সঙ্গে থাকুন  এবং নিশ্চিত করুন সেরা মানের চায়নিজ কালেকশনের নির্ভরযোগ্য গন্তব্য।
 
-ধন্যবাদ।
-    `;
+ধন্যবাদ।`;
+
+    // Function to truncate text to specified word count
+    const truncateText = (text, wordCount) => {
+        const words = text.split(' ');
+        if (words.length > wordCount) {
+            return words.slice(0, wordCount).join(' ') + '...';
+        }
+        return text;
+    };
+
     const [isReadMore, setIsReadMore] = useState(false);
-    const visibleText = isReadMore ? fullText : fullText.split('\n').slice(0, 4).join('\n');
+
+    // Desktop shows 60 words, mobile shows 80 words initially
+    const desktopInitialWords = 60;
+    const mobileInitialWords = 30;
+
+    const visibleTextDesktop = isReadMore ? fullText : truncateText(fullText, desktopInitialWords);
+    const visibleTextMobile = isReadMore ? fullText : truncateText(fullText, mobileInitialWords);
+
+    const shouldShowButton = fullText.split(' ').length > Math.min(desktopInitialWords, mobileInitialWords);
 
     const toggleReadMore = () => {
         setIsReadMore(!isReadMore);
@@ -93,7 +109,7 @@ Mahira Collection-এ আমরা বিশ্বাস করি, কোয়
     ];
 
     return (
-        <footer className="bg-gradient-to-b mt-4 from-gray-900 to-gray-800 text-gray-300 play-regular w-full border-t border-gray-700">
+        <footer className="bg-gradient-to-b mt-6 from-gray-900 to-gray-800 text-gray-300 play-regular w-full border-t border-gray-700">
             {/* Main Footer Content */}
             <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
                 {/* Brand and Description - Desktop */}
@@ -104,28 +120,28 @@ Mahira Collection-এ আমরা বিশ্বাস করি, কোয়
                             <img
                                 src={navbrandIMG}
                                 alt="Mahira Collection Logo"
-                                className="h-28 object-contain transform group-hover:scale-105 transition-transform duration-300"
+                                className=" transform group-hover:scale-105 transition-transform duration-300"
                             />
                         </Link>
                     </div>
                     {/* Company Description */}
                     <div className="text-sm md:text-base text-center md:text-left">
                         <p className="whitespace-pre-line leading-relaxed">
-                            {visibleText}
-                            {!isReadMore && fullText.split('\n').length > 4 && (
+                            {visibleTextDesktop}
+                            {shouldShowButton && (
                                 <button
                                     onClick={toggleReadMore}
                                     className="text-pink-400 hover:text-pink-300 font-medium ml-2 focus:outline-none flex items-center transition-colors"
                                 >
-                                    Read More <ChevronDown size={16} className="ml-1" />
-                                </button>
-                            )}
-                            {isReadMore && fullText.split('\n').length > 4 && (
-                                <button
-                                    onClick={toggleReadMore}
-                                    className="text-pink-400 hover:text-pink-300 font-medium ml-2 focus:outline-none flex items-center transition-colors"
-                                >
-                                    Read Less <ChevronUp size={16} className="ml-1" />
+                                    {isReadMore ? (
+                                        <>
+                                            Read Less <ChevronUp size={16} className="ml-1" />
+                                        </>
+                                    ) : (
+                                        <>
+                                            Read More <ChevronDown size={16} className="ml-1" />
+                                        </>
+                                    )}
                                 </button>
                             )}
                         </p>
@@ -143,11 +159,28 @@ Mahira Collection-এ আমরা বিশ্বাস করি, কোয়
                             />
                         </Link>
                         <p className="text-sm text-center whitespace-pre-line leading-relaxed">
-                            {fullText.split('\n').slice(0, 4).join('\n')}
+                            {visibleTextMobile}
+                            {shouldShowButton && (
+                                <button
+                                    onClick={toggleReadMore}
+                                    className="text-pink-400 hover:text-pink-300 font-medium ml-2 focus:outline-none flex items-center transition-colors"
+                                >
+                                    {isReadMore ? (
+                                        <>
+                                            Read Less <ChevronUp size={16} className="ml-1" />
+                                        </>
+                                    ) : (
+                                        <>
+                                            Read More <ChevronDown size={16} className="ml-1" />
+                                        </>
+                                    )}
+                                </button>
+                            )}
                         </p>
                     </div>
                 </div>
 
+                {/* Rest of your footer code remains the same */}
                 <div className="max-w-7xl mx-auto">
                     {/* Mobile Accordion */}
                     <div className="md:hidden space-y-6 mb-8">
@@ -165,9 +198,9 @@ Mahira Collection-এ আমরা বিশ্বাস করি, কোয়
                                     {[
                                         { name: 'Home', path: '/' },
                                         { name: 'About Us', path: '/about' },
-                                        { name: 'Products', path: '/products' },
+                                        { name: 'Products', path: '/all-categories' },
                                         { name: 'Contact', path: '/contact' },
-                                        { name: 'Privacy Policy', path: '/privacy-policy' },
+                                        { name: 'Privacy Policy', path: '/terms-condition' },
                                     ].map((link, index) => (
                                         <li key={index}>
                                             <Link

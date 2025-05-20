@@ -522,7 +522,7 @@ const MainNavbar = () => {
                             )}
                         </button>
 
-                        <a href="tel:+1234567890" className="flex flex-col items-center justify-center text-gray-700 hover:text-pink-700 p-2">
+                        <a href="tel:+8801783694568" className="flex flex-col items-center justify-center text-gray-700 hover:text-pink-700 p-2">
                             <Phone size={20} />
                             <span className="text-xs mt-1">Call</span>
                         </a>

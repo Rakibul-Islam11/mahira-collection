@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getDocs, updateDoc, query, limit, startAfter, orderBy } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDocs, updateDoc, query, limit, startAfter, orderBy, deleteField } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 import { db } from '../../../firbase.config';
 import './product-update.css'
@@ -21,7 +21,9 @@ const ProductUpdate = () => {
         description: '',
         category: '',
         mainImage: '',
-        colorVariants: []
+        colorVariants: [],
+        productType: '',
+        preOrderDescription: ''
     });
 
     useEffect(() => {
@@ -64,6 +66,8 @@ const ProductUpdate = () => {
             description: data.description || '',
             category: data.category || '',
             mainImage: data.mainImage || '',
+            productType: data.productType || '',
+            preOrderDescription: data.preOrderDescription || '',
             colorVariants: Array.isArray(data.colorVariants)
                 ? data.colorVariants.map(variant => ({
                     colorName: variant.colorName || '',
@@ -128,6 +132,8 @@ const ProductUpdate = () => {
             description: product.description || '',
             category: product.category || '',
             mainImage: product.mainImage || '',
+            productType: product.productType || '',
+            preOrderDescription: product.preOrderDescription || '',
             colorVariants: Array.isArray(product.colorVariants)
                 ? product.colorVariants.map(variant => ({
                     colorName: variant.colorName || '',
@@ -151,6 +157,14 @@ const ProductUpdate = () => {
         setEditFormData({
             ...editFormData,
             [name]: value
+        });
+    };
+
+    const handleProductTypeChange = (e) => {
+        const { value } = e.target;
+        setEditFormData({
+            ...editFormData,
+            productType: value === 'delete-pre-order' ? '' : value
         });
     };
 
@@ -223,7 +237,18 @@ const ProductUpdate = () => {
         e.preventDefault();
         try {
             const productRef = doc(db, 'products', editingProduct);
-            await updateDoc(productRef, editFormData);
+
+            // Prepare update data
+            const updateData = {
+                ...editFormData,
+                // Remove empty fields
+                ...(editFormData.productType === '' && { productType: deleteField() }),
+                ...(editFormData.preOrderDescription === '' && { preOrderDescription: deleteField() })
+            };
+
+            await updateDoc(productRef, updateData);
+
+            // Update local state
             setProducts(products.map(product =>
                 product.id === editingProduct ? { ...product, ...editFormData } : product
             ));
@@ -414,6 +439,43 @@ const ProductUpdate = () => {
                                             </div>
                                         </div>
 
+                                        {/* Product Type Section */}
+                                        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                                            <h2 className="text-base sm:text-lg md:text-xl font-semibold mb-3 sm:mb-4">Product Type</h2>
+                                            <div className="grid grid-cols-1 gap-3 sm:gap-4">
+                                                <div>
+                                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                                        Set Product Type
+                                                        <span className="text-xs text-gray-500 block">Current: {editFormData.productType || 'Not set'}</span>
+                                                    </label>
+                                                    <select
+                                                        name="productType"
+                                                        value={editFormData.productType}
+                                                        onChange={handleProductTypeChange}
+                                                        className="w-full p-1 sm:p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                                                    >
+                                                        <option value="">Select action</option>
+                                                        <option value="pre-order">Set as Pre-order</option>
+                                                        <option value="delete-pre-order">Remove Pre-order</option>
+                                                    </select>
+                                                </div>
+
+                                                {editFormData.productType === 'pre-order' && (
+                                                    <div>
+                                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Pre-order Description *</label>
+                                                        <textarea
+                                                            name="preOrderDescription"
+                                                            value={editFormData.preOrderDescription}
+                                                            onChange={handleInputChange}
+                                                            className="w-full p-1 sm:p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                                                            rows="3"
+                                                            required={editFormData.productType === 'pre-order'}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
                                         {/* Color Variants Section */}
                                         <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
                                             <div className="flex justify-between items-center mb-3 sm:mb-4">
@@ -557,6 +619,11 @@ const ProductUpdate = () => {
                                                             {product.discount}% OFF
                                                         </span>
                                                     )}
+                                                    {product.productType === 'pre-order' && (
+                                                        <span className="bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded-full text-xs">
+                                                            Pre-order
+                                                        </span>
+                                                    )}
                                                     <span className="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full text-xs">
                                                         {product.category || 'Uncategorized'}
                                                     </span>
@@ -596,6 +663,13 @@ const ProductUpdate = () => {
                                         <p className="text-gray-600 break-words mb-3 sm:mb-4 text-xs sm:text-sm">
                                             {product.description || 'No description available'}
                                         </p>
+
+                                        {product.productType === 'pre-order' && product.preOrderDescription && (
+                                            <div className="bg-purple-50 border-l-4 border-purple-500 p-3 sm:p-4 mb-3 sm:mb-4">
+                                                <h3 className="text-xs sm:text-sm font-semibold text-purple-800 mb-1">Pre-order Information:</h3>
+                                                <p className="text-xs sm:text-sm text-purple-700">{product.preOrderDescription}</p>
+                                            </div>
+                                        )}
 
                                         <div className="flex items-center mb-3 sm:mb-4">
                                             {product.discount > 0 ? (

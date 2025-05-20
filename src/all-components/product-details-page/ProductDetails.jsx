@@ -249,7 +249,7 @@ const ProductDetails = () => {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-64">
+            <div className="min-h-screen flex justify-center items-center h-64">
                 <div className="text-center">
                     <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -395,7 +395,7 @@ const ProductDetails = () => {
                                             <img
                                                 src={image}
                                                 alt={`${product.name} - ${activeColor.colorName}`}
-                                                className="w-full h-64 sm:h-80 md:h-[400px] object-cover"
+                                                className="w-full h-64 sm:h-80 md:h-[400px] object-contain"
                                             />
                                             {activeColor.stock < 1 && (
                                                 <div className="absolute inset-0 flex items-center justify-center">
